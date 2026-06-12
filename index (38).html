@@ -1,0 +1,3341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=5">
+<title>Restaurante Dona Leninha — Gestão</title>
+<meta name="description" content="Sistema de Gestão de Pedidos Dona Leninha - Otimizado para Delivery.">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1d4ed8;--blue-light:#eff6ff;--blue-mid:#3b82f6;
+  --green:#15803d;--green-light:#f0fdf4;
+  --red:#dc2626;--red-light:#fef2f2;
+  --yellow:#a16207;--yellow-light:#fefce8;
+  --orange:#ea580c;--orange-light:#fff7ed;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+  --gray-400:#6b7280;--gray-500:#4b5563;--gray-600:#374151;--gray-800:#1f2937;--gray-900:#111827;
+  --white:#fff;--radius:10px;--radius-sm:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
+}
+body{font-family:'DM Sans',sans-serif;background:#f0f4f8;color:#0a0a0a;min-height:100vh;font-size:14px}
+#app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--blue);color:#fff;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-brand{font-size:16px;font-weight:600;letter-spacing:-.3px}
+.topbar-sub{font-size:11px;opacity:.7;margin-top:1px}
+.topbar-time{font-family:'DM Mono',monospace;font-size:12px;opacity:.8}
+main{flex:1;padding:16px;max-width:760px;margin:0 auto;width:100%}
+.page{display:none}.page.active{display:block}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-head{background:var(--blue);color:#fff;padding:12px 16px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+.card-head-title{flex:1}
+.card-body{padding:16px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--gray-600);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--gray-900);background:var(--white);transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--gray-200);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;background:var(--white);color:var(--gray-800);transition:.15s;white-space:nowrap}
+.btn:hover{background:var(--gray-50)}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:#1e40af}
+.btn-success{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-success:hover{background:#166534}
+.btn-danger{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-danger:hover{background:#b91c1c}
+.btn-orange{background:var(--orange);color:#fff;border-color:var(--orange)}
+.btn-orange:hover{background:#c2410c}
+.btn-purple{background:var(--purple);color:#fff;border-color:var(--purple)}
+.btn-purple:hover{background:#6d28d9}
+.btn-maps{background:#1a73e8;color:#fff;border-color:#1a73e8;font-size:14px;font-weight:600;padding:12px 20px}
+.btn-maps:hover{background:#1557b0}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-back{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.3);padding:5px 10px;font-size:12px}
+.btn-back:hover{background:rgba(255,255,255,.3)}
+.btn-full{width:100%}
+.btn-xl{padding:14px;font-size:15px;font-weight:600}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.alert-success{background:var(--green-light);color:var(--green);border:1px solid #86efac}
+.alert-error{background:var(--red-light);color:var(--red);border:1px solid #fca5a5}
+.alert-warn{background:var(--yellow-light);color:var(--yellow);border:1px solid #fde047}
+.alert-info{background:var(--blue-light);color:var(--blue);border:1px solid #93c5fd}
+.alert-purple{background:var(--purple-light);color:var(--purple);border:1px solid #c4b5fd}
+.hidden{display:none!important}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-aguardando{background:#fef3c7;color:#92400e}
+.badge-confirmado{background:#d1fae5;color:#065f46}
+.badge-entregue{background:#dcfce7;color:#15803d}
+.badge-cancelado{background:#fee2e2;color:#b91c1c}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 10px;color:var(--gray-600);font-weight:500;border-bottom:1px solid var(--gray-200);white-space:nowrap;background:var(--gray-50)}
+td{padding:9px 10px;border-bottom:1px solid var(--gray-100);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.status-sel{padding:5px 8px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:12px;background:var(--white);cursor:pointer}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.filter-row select{flex:1;min-width:130px;padding:7px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px}
+.empty{text-align:center;padding:32px;color:var(--gray-400);font-size:13px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--white);border-radius:var(--radius);width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-head{background:var(--blue);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-weight:600}
+.modal-body{padding:16px}
+.modal-foot{padding:12px 16px;border-top:1px solid var(--gray-200);display:flex;gap:8px;flex-wrap:wrap}
+/* HOME */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);text-align:center}
+.stat-label{font-size:10px;color:var(--gray-400);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-value{font-size:26px;font-weight:700;font-family:'DM Mono',monospace;line-height:1}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.home-tile{background:var(--white);border-radius:var(--radius);padding:20px 16px;box-shadow:var(--shadow);cursor:pointer;transition:.15s;text-align:center;position:relative}
+.home-tile:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.home-tile:active{transform:scale(.98)}
+.home-tile-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 10px}
+.home-tile h3{font-size:14px;font-weight:600;margin-bottom:2px}
+.home-tile p{font-size:12px;color:var(--gray-400)}
+/* BADGE PEDIDOS NOVOS */
+.badge-novos{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;border-radius:50%;width:22px;height:22px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;animation:pulse-badge .8s ease-in-out infinite alternate}
+@keyframes pulse-badge{from{transform:scale(1)}to{transform:scale(1.15)}}
+.pix-alert{background:var(--orange-light);border:1px solid #fed7aa;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--orange);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.link-box{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:10px 12px;font-family:'DM Mono',monospace;font-size:12px;word-break:break-all;color:var(--gray-600)}
+/* ROTAS */
+.rota-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:10px 14px;background:var(--blue-light);border-radius:var(--radius-sm)}
+.rota-horario{font-weight:700;font-size:15px;color:var(--blue)}
+.rota-count{font-size:12px;color:var(--gray-600)}
+.entrega-card{display:flex;gap:12px;padding:12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);margin-bottom:8px;background:var(--white)}
+.entrega-num{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+.entrega-info{flex:1;min-width:0}
+.entrega-nome{font-weight:600;font-size:14px}
+.entrega-end{font-size:12px;color:var(--gray-600);margin-top:2px}
+.entrega-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.entrega-acoes{display:flex;align-items:flex-start;gap:4px;flex-shrink:0}
+.tag{background:var(--gray-100);color:var(--gray-600);padding:2px 8px;border-radius:20px;font-size:11px}
+.ponto-inicio{background:var(--green-light);border:1px solid #86efac;border-radius:var(--radius-sm);padding:12px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px;font-size:13px}
+/* MOTOBOY */
+.horario-tabs{display:flex;flex-direction:column;gap:8px}
+.h-tab{padding:14px 16px;background:var(--blue-light);border:2px solid var(--blue-mid);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--blue);text-align:left;transition:.15s}
+.h-tab:hover{background:#dbeafe}
+/* CONFIG */
+.dia-row{display:grid;grid-template-columns:80px 1fr 100px;gap:8px;align-items:center;margin-bottom:8px}
+.dia-label{font-size:13px;font-weight:500;color:var(--gray-600)}
+/* FINANCEIRO */
+.fin-lock{text-align:center;padding:40px 20px}
+.fin-lock-icon{font-size:48px;margin-bottom:12px}
+.fin-lock h2{font-size:18px;font-weight:700;margin-bottom:6px}
+.fin-lock p{font-size:13px;color:var(--gray-600);margin-bottom:20px}
+.fin-stat{background:var(--white);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.fin-stat-info{display:flex;flex-direction:column;gap:2px}
+.fin-stat-label{font-size:12px;color:var(--gray-400);font-weight:500}
+.fin-stat-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace}
+.fin-stat-sub{font-size:12px;color:var(--gray-400);margin-top:2px}
+.fin-stat-icon{font-size:28px}
+.fin-section{font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-100);font-size:13px}
+.fin-row:last-child{border-bottom:none}
+.fin-row-label{color:var(--gray-600)}
+.fin-row-val{font-weight:600;font-family:'DM Mono',monospace}
+/* LOADING */
+#loading{position:fixed;inset:0;background:#1d4ed8;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:#fff}
+.load-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo{font-size:20px;font-weight:700}
+.sub{font-size:13px;opacity:.7;margin-top:4px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+/* FORMULÁRIO */
+.pix-info-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:var(--radius-sm);padding:12px;font-size:13px;color:#92400e;margin-bottom:12px}
+/* NOTIFICAÇÃO POPUP */
+#notif-popup{position:fixed;top:70px;right:16px;z-index:200;background:var(--white);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.18);border-left:4px solid var(--orange);padding:14px 36px 14px 16px;min-width:240px;max-width:300px;display:none;animation:slideIn .3s ease}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+#notif-popup .notif-title{font-weight:700;font-size:14px;color:var(--orange);margin-bottom:4px}
+#notif-popup .notif-body{font-size:13px;color:var(--gray-600);margin-bottom:10px}
+#notif-popup .notif-btn{font-size:12px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif}
+/* SENHA CONFIG */
+.cfg-lock{text-align:center;padding:40px 20px}
+/* HORARIOS EDITAVEIS */
+.horario-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.horario-item input{flex:1;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px}
+/* BAIRROS CONFIG */
+.bairro-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.bairro-item span{flex:1;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:13px;background:var(--gray-50)}
+/* CLIENTES */
+.cliente-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px}
+.cliente-nome{font-weight:600;font-size:15px;margin-bottom:4px}
+.cliente-info{font-size:12px;color:var(--gray-600);margin-bottom:2px}
+.cliente-acoes{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.cli-lock{text-align:center;padding:40px 20px}
+/* MODAL CONFIRMAÇÃO SENHA */
+#modal-senha-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;display:none}
+#modal-senha{background:var(--white);border-radius:var(--radius);width:100%;max-width:360px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+/* CONFIG PRECO FIX */
+#cfg-preco-marmita{min-width:0;width:100%}
+.prato-preco-input{min-width:0;width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px}
+/* LOGO RESPONSIVA */
+.loading-logo{
+  width:90px;height:90px;border-radius:50%;object-fit:cover;
+  border:3px solid rgba(255,255,255,.4);
+}
+.form-logo{
+  width:80px;height:80px;border-radius:50%;object-fit:cover;
+  border:3px solid rgba(255,255,255,.4);
+  display:block;margin:0 auto;
+}
+@media(min-width:768px){
+  .loading-logo{width:120px;height:120px}
+  .form-logo{width:110px;height:110px}
+}
+@media(min-width:1100px){
+  .loading-logo{width:140px;height:140px}
+  .form-logo{width:130px;height:130px}
+}
+/* ── TABLET (768px+) ── */
+@media(min-width:768px){
+  main{max-width:900px;padding:20px}
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
+  .home-grid{grid-template-columns:repeat(3,1fr)}
+  .modal{max-width:540px}
+  .grid2{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:1fr 1fr 1fr}
+  .fin-stat{padding:16px 20px}
+  .card-body{padding:20px}
+  .card-head{padding:14px 20px;font-size:15px}
+}
+/* ── DESKTOP (1100px+) ── */
+@media(min-width:1100px){
+  main{max-width:1100px}
+  /* Pedidos: tabela mais espaçosa */
+  th,td{padding:11px 14px}
+  /* Home: cards em 3 colunas */
+  .home-grid{grid-template-columns:repeat(3,1fr);gap:14px}
+  .stats-grid{gap:14px}
+  .stat{padding:18px}
+  .stat-value{font-size:32px}
+  /* Layout de duas colunas nas páginas de conteúdo denso */
+  .desktop-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  .fin-stat-val{font-size:26px}
+  .home-tile{padding:24px 20px}
+  .home-tile-icon{width:52px;height:52px;font-size:24px}
+}
+/* ── MOBILE (max 600px) ── */
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .home-grid{grid-template-columns:1fr 1fr}
+  main{padding:10px}
+  .grid2{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr}
+  .entrega-acoes{flex-direction:row}
+  .dia-row{grid-template-columns:65px 1fr 80px;gap:6px}
+  .dia-label{font-size:12px}
+  .prato-preco-input{font-size:12px;padding:7px 8px}
+  .modal{margin:8px}
+  .tbl-wrap{font-size:12px}
+  th,td{padding:7px 6px}
+  .btn-sm{padding:4px 8px;font-size:11px}
+  .cliente-acoes{gap:4px}
+  .bairro-item span{font-size:12px}
+}
+
+/* Contraste garantido para Lighthouse/acessibilidade — WCAG AA */
+#app span,#app p,#app label,#app td,#app th,#app li,
+#app .stat-label,#app .stat-sub,#app .empty,
+#app .fin-stat-label,#app .fin-stat-sub,#app .fin-section,
+#app .home-tile p,#app .rota-count,#app .entrega-end,
+#app .tag,#app .dia-label,#app .bairro-item span{color:#374151!important}
+#app .btn{color:#111827!important}
+</style>
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dona Leninha">
+<link rel="apple-touch-icon" href="./logo.jpg">
+<meta name="theme-color" content="#1d4ed8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1d4ed8" media="(prefers-color-scheme: dark)">
+<!-- Performance: preconnects -->
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"></noscript>
+</head>
+<body>
+
+<div id="loading">
+  <img src="./logo.jpg" alt="Dona Leninha" class="loading-logo" fetchpriority="high" width="90" height="90">
+  <div class="load-spin" style="margin-top:16px"></div>
+  <div class="logo" style="margin-top:12px">Dona Leninha</div>
+  <div class="sub">Conectando...</div>
+</div>
+
+<!-- POPUP NOTIFICAÇÃO NOVO PEDIDO -->
+<div id="notif-popup">
+  <div class="notif-title">🔔 Novo pedido!</div>
+  <div class="notif-body" id="notif-body">Um novo pedido foi recebido.</div>
+  <div id="notif-nome" style="font-size:12px;color:var(--gray-500);margin-top:2px"></div>
+  <button class="notif-btn" onclick="notifVerPedido()">Ver pedido →</button>
+  <button style="position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--gray-400)" onclick="notifFechar()">✕</button>
+</div>
+
+<!-- MODAL CONFIG (adicionar bairro/adicional) -->
+<div id="cfg-modal-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:var(--radius);width:100%;max-width:360px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div id="cfg-modal-head" style="background:var(--blue);color:#fff;padding:12px 16px;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:space-between">
+      <span id="cfg-modal-titulo"></span>
+      <button onclick="cfgModalFechar()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="padding:16px">
+      <div id="cfg-modal-body"></div>
+      <div id="cfg-modal-err" style="color:var(--red);font-size:12px;margin-bottom:8px;display:none">Preencha o campo obrigatório.</div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--gray-200);display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="cfgModalFechar()">Cancelar</button>
+      <button class="btn btn-primary" id="cfg-modal-confirm">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GENÉRICO DE CONFIRMAÇÃO COM SENHA -->
+<div id="modal-senha-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:16px">
+  <div id="modal-senha" style="background:var(--white);border-radius:var(--radius);width:100%;max-width:360px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div id="modal-senha-head" style="background:var(--red);color:#fff;padding:12px 16px;font-weight:600;font-size:14px">⚠️ Confirmar ação</div>
+    <div style="padding:16px">
+      <div id="modal-senha-msg" style="font-size:13px;color:var(--gray-600);margin-bottom:12px"></div>
+      <div class="field" style="margin-bottom:4px">
+        <label>Senha de confirmação</label>
+        <input type="password" id="modal-senha-input" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')modalSenhaConfirmar()">
+      </div>
+      <div id="modal-senha-err" class="alert alert-error hidden" style="margin-top:8px">Senha incorreta.</div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--gray-200);display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="modalSenhaCancelar()">Cancelar</button>
+      <button class="btn btn-danger" onclick="modalSenhaConfirmar()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">🍱 Dona Leninha</div>
+      <div class="topbar-sub">Gestão de entregas</div>
+    </div>
+    <div class="topbar-time" id="clock"></div>
+  </div>
+
+  <main>
+
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label">Hoje</div><div class="stat-value" id="st-total">—</div></div>
+        <div class="stat"><div class="stat-label">Aguard. PIX</div><div class="stat-value" id="st-pix" style="color:var(--orange)">—</div></div>
+        <div class="stat"><div class="stat-label">Entregues</div><div class="stat-value" id="st-entregues" style="color:var(--green)">—</div></div>
+        <div class="stat"><div class="stat-label">Cancelados</div><div class="stat-value" id="st-cancelados" style="color:var(--red)">—</div></div>
+      </div>
+      <div id="notif-banner" style="display:none;background:#fffbeb;border:1px solid #fcd34d;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;font-size:13px;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="flex:1">🔔 Ative as notificações para receber avisos de novo pedido mesmo com a aba em segundo plano.</span>
+        <button class="btn btn-sm btn-primary" onclick="pedirPermissaoNotificacoes()">Ativar</button>
+      </div>
+      <div id="pix-pendente-banner" class="pix-alert hidden">
+        <strong>⚠️ PIX pendente!</strong> Pedidos aguardando confirmação.
+        <button class="btn btn-sm btn-orange" style="margin-left:auto" onclick="nav('pedidos')">Ver agora</button>
+      </div>
+      <div class="home-grid">
+        <div class="home-tile" onclick="navPedidos()">
+          <div id="badge-novos" class="badge-novos hidden"></div>
+          <div class="home-tile-icon" style="background:#dbeafe">📋</div>
+          <h3>Pedidos</h3><p>Ver todos os pedidos</p>
+        </div>
+        <div class="home-tile" onclick="nav('rotas')">
+          <div class="home-tile-icon" style="background:#fff7ed">🗺️</div>
+          <h3>Rotas</h3><p>Organizar entregas</p>
+        </div>
+        <div class="home-tile" onclick="nav('financeiro')">
+          <div class="home-tile-icon" style="background:#f0fdf4">💰</div>
+          <h3>Financeiro</h3><p>Fechamento do dia</p>
+        </div>
+        <div class="home-tile" onclick="nav('config')">
+          <div class="home-tile-icon" style="background:#ede9fe">⚙️</div>
+          <h3>Config</h3><p>Restaurante e cardápio</p>
+        </div>
+        <div class="home-tile" onclick="nav('clientes')">
+          <div class="home-tile-icon" style="background:#fce7f3">👥</div>
+          <h3>Clientes</h3><p>Base de clientes</p>
+        </div>
+        <div class="home-tile" onclick="motoboyCardAbrir()">
+          <div class="home-tile-icon" style="background:#dcfce7">🏍️</div>
+          <h3>Motoboy</h3><p>Link de entregas</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">🔗 Link do Formulário de Pedidos</div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--gray-600);margin-bottom:10px">Mande esse link para os clientes pelo WhatsApp.</p>
+          <div class="link-box" id="form-link-home">Carregando...</div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="copiarLinkFormulario()">📋 Copiar link</button>
+            <button class="btn btn-success btn-sm" onclick="compartilharFormulario()">💬 Enviar no WhatsApp</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEDIDOS -->
+    <div class="page" id="page-pedidos">
+      <div class="card">
+        <div class="card-head">
+          <button class="btn btn-back" onclick="nav('home')">← Início</button>
+          <span class="card-head-title">Todos os Pedidos</span>
+          <button class="btn btn-back" onclick="pedidosLoad()">↺</button>
+        </div>
+        <div class="card-body" style="padding-bottom:8px">
+          <div class="filter-row">
+            <select id="filtro-horario" onchange="pedidosFiltrar()">
+              <option value="">Todos os horários</option>
+            </select>
+            <select id="filtro-status" onchange="pedidosFiltrar()">
+              <option value="">Todos os status</option>
+              <option>Aguardando PIX</option>
+              <option>PIX Confirmado</option>
+              <option>Confirmado</option>
+              <option>Entregue</option>
+              <option>Cancelado</option>
+            </select>
+            <select id="filtro-bairro" onchange="pedidosFiltrar()">
+              <option value="">Todos os bairros</option>
+            </select>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Nome</th><th>Horário</th><th>Bairro</th><th>Produto</th><th>Pgto</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="pedidos-tbody">
+              <tr><td colspan="8"><div class="empty">Carregando...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROTAS -->
+    <div class="page" id="page-rotas">
+      <div class="card">
+        <div class="card-head">
+          <button class="btn btn-back" onclick="nav('home')">← Início</button>
+          <span class="card-head-title">Rotas por Horário</span>
+          <button class="btn btn-back" onclick="rotasLoad()">↺</button>
+        </div>
+        <div class="card-body">
+          <div id="rotas-alert" class="alert alert-info hidden">Nenhum pedido ativo encontrado.</div>
+          <div id="rotas-content"><div class="empty">Carregando...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOTOBOY (bloqueado — só acessa via ?tela=motoboy) -->
+    <div class="page" id="page-motoboy">
+      <div id="motoboy-horario-sel" class="card">
+        <div class="card-head">
+          <span class="card-head-title">🏍️ Selecione o Horário</span>
+        </div>
+        <div class="card-body">
+          <div id="motoboy-tabs" class="horario-tabs"></div>
+          <div id="motoboy-alert" class="alert alert-info hidden">Nenhuma entrega ativa agora.</div>
+        </div>
+      </div>
+      <div id="motoboy-rota-view" class="hidden">
+        <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+          <button class="btn btn-sm" onclick="motoboyVoltarSel()">← Voltar</button>
+          <span id="motoboy-rota-titulo" style="font-weight:600;font-size:15px"></span>
+        </div>
+        <button onclick="motoboyAbrirWaze()" style="width:100%;margin-bottom:14px;background:#33ccff;border:none;color:#fff;font-weight:800;padding:13px;border-radius:var(--radius-sm);cursor:pointer;font-size:15px;letter-spacing:.3px">
+          🚗 ABRIR PRÓXIMA ENTREGA NO WAZE
+        </button>
+        <div class="ponto-inicio">🏠 <div><strong>Saída:</strong> <span id="motoboy-origem"></span></div></div>
+        <div id="motoboy-entregas"></div>
+      </div>
+    </div>
+
+    <!-- FINANCEIRO -->
+    <div class="page" id="page-financeiro">
+      <div id="fin-lock-screen">
+        <div class="card">
+          <div class="card-head">
+            <button class="btn btn-back" onclick="nav('home')">← Início</button>
+            <span class="card-head-title">💰 Financeiro</span>
+          </div>
+          <div class="card-body fin-lock">
+            <div class="fin-lock-icon">🔐</div>
+            <h2>Área Restrita</h2>
+            <p>Digite a senha para acessar o financeiro</p>
+            <div class="field" style="max-width:240px;margin:0 auto 12px">
+              <input type="password" id="fin-senha-input" placeholder="Senha" onkeydown="if(event.key==='Enter')finVerificarSenha()">
+            </div>
+            <div id="fin-senha-err" class="alert alert-error hidden" style="max-width:240px;margin:0 auto 12px">Senha incorreta.</div>
+            <button class="btn btn-primary" onclick="finVerificarSenha()">Entrar</button>
+          </div>
+        </div>
+      </div>
+      <div id="fin-content" class="hidden">
+        <div class="card">
+          <div class="card-head">
+            <button class="btn btn-back" onclick="nav('home')">← Início</button>
+            <span class="card-head-title">💰 Financeiro</span>
+            <button class="btn btn-back" onclick="finCarregar()">↺</button>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+              <div class="field" style="margin:0;flex:1;min-width:140px">
+                <input type="date" id="fin-data" onchange="finCarregar()">
+              </div>
+              <button class="btn btn-sm" onclick="finHoje()">Hoje</button>
+              <button class="btn btn-sm btn-danger" onclick="finBloquear()">🔒 Sair</button>
+            </div>
+            <div id="fin-loading" class="empty">Carregando...</div>
+            <div id="fin-dados" class="hidden desktop-2col">
+              <div class="fin-section">📊 Resumo do dia</div>
+              <div class="fin-stat">
+                <div class="fin-stat-info">
+                  <div class="fin-stat-label">Total de pedidos</div>
+                  <div class="fin-stat-val" id="fin-total-pedidos">0</div>
+                </div>
+                <div class="fin-stat-icon">📋</div>
+              </div>
+              <div class="fin-stat">
+                <div class="fin-stat-info">
+                  <div class="fin-stat-label">Receita total (apenas entregues)</div>
+                  <div class="fin-stat-val" id="fin-receita-total" style="color:var(--green)">R$ 0,00</div>
+                  <div class="fin-stat-sub" id="fin-receita-sub"></div>
+                </div>
+                <div class="fin-stat-icon">💵</div>
+              </div>
+              <div class="fin-section">💳 Por forma de pagamento</div>
+              <div class="card" style="margin-bottom:10px">
+                <div class="card-body" style="padding:12px">
+                  <div class="fin-row">
+                    <div class="fin-row-label">💵 Dinheiro</div>
+                    <div><span id="fin-din-qtd" style="font-size:12px;color:var(--gray-400);margin-right:8px"></span><span class="fin-row-val" id="fin-din-val">R$ 0,00</span></div>
+                  </div>
+                  <div class="fin-row">
+                    <div class="fin-row-label">💳 Cartão</div>
+                    <div><span id="fin-cart-qtd" style="font-size:12px;color:var(--gray-400);margin-right:8px"></span><span class="fin-row-val" id="fin-cart-val">R$ 0,00</span></div>
+                  </div>
+                  <div class="fin-row">
+                    <div class="fin-row-label">📱 PIX</div>
+                    <div><span id="fin-pix-qtd" style="font-size:12px;color:var(--gray-400);margin-right:8px"></span><span class="fin-row-val" id="fin-pix-val">R$ 0,00</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="fin-section">🍱 Por produto</div>
+              <div class="card" style="margin-bottom:10px">
+                <div class="card-body" style="padding:12px">
+                  <div class="fin-row">
+                    <div class="fin-row-label">Marmita Completa</div>
+                    <div><span id="fin-marm-qtd" style="font-size:12px;color:var(--gray-400);margin-right:8px"></span><span class="fin-row-val" id="fin-marm-val">R$ 0,00</span></div>
+                  </div>
+                  <div class="fin-row">
+                    <div class="fin-row-label">Prato do Dia</div>
+                    <div><span id="fin-prato-qtd" style="font-size:12px;color:var(--gray-400);margin-right:8px"></span><span class="fin-row-val" id="fin-prato-val">R$ 0,00</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="fin-section">📦 Status dos pedidos</div>
+              <div class="card">
+                <div class="card-body" style="padding:12px">
+                  <div class="fin-row"><div class="fin-row-label">✅ Entregues</div><span class="fin-row-val" id="fin-s-entregues">0</span></div>
+                  <div class="fin-row"><div class="fin-row-label">⏳ Aguardando PIX</div><span class="fin-row-val" id="fin-s-aguardando">0</span></div>
+                  <div class="fin-row"><div class="fin-row-label">✔️ PIX Confirmado / Confirmado</div><span class="fin-row-val" id="fin-s-confirmado">0</span></div>
+                  <div class="fin-row"><div class="fin-row-label">❌ Cancelados</div><span class="fin-row-val" id="fin-s-cancelado">0</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG (com senha) -->
+    <div class="page" id="page-config">
+      <!-- TELA DE SENHA CONFIG -->
+      <div id="cfg-lock-screen">
+        <div class="card">
+          <div class="card-head">
+            <button class="btn btn-back" onclick="nav('home')">← Início</button>
+            <span class="card-head-title">⚙️ Configurações</span>
+          </div>
+          <div class="card-body cfg-lock">
+            <div class="fin-lock-icon">🔐</div>
+            <h2>Área Restrita</h2>
+            <p>Digite a senha para acessar as configurações</p>
+            <div class="field" style="max-width:240px;margin:0 auto 12px">
+              <input type="password" id="cfg-senha-input" placeholder="Senha" onkeydown="if(event.key==='Enter')cfgVerificarSenha()">
+            </div>
+            <div id="cfg-senha-err" class="alert alert-error hidden" style="max-width:240px;margin:0 auto 12px">Senha incorreta.</div>
+            <button class="btn btn-primary" onclick="cfgVerificarSenha()">Entrar</button>
+          </div>
+        </div>
+      </div>
+      <!-- CONTEÚDO CONFIG -->
+      <div id="cfg-content" class="hidden">
+        <div class="card">
+          <div class="card-head">
+            <button class="btn btn-back" onclick="nav('home')">← Início</button>
+            <span class="card-head-title">⚙️ Configurações</span>
+            <button class="btn btn-back btn-sm btn-danger" onclick="cfgBloquear()">🔒</button>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>Nome do restaurante</label><input type="text" id="cfg-nome" value="Restaurante Dona Leninha"></div>
+            <div class="field"><label>Endereço completo (ponto de partida das rotas)</label><input type="text" id="cfg-end" placeholder="Ex: Rua das Flores, 100, Calçada, Salvador - BA"></div>
+            <div class="field"><label>WhatsApp do restaurante (com DDD, só números)</label><input type="tel" id="cfg-tel" placeholder="Ex: 71999999999" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+            <div class="field"><label>Preço da Marmita Completa (R$)</label><input type="number" id="cfg-preco-marmita" placeholder="Ex: 15.00" step="0.01" min="0"></div>
+            <div class="field"><label>Descrição da Marmita Completa <span style="font-weight:400;color:var(--gray-400);font-size:11px">(aparece no formulário do cliente)</span></label><textarea id="cfg-desc-marmita" rows="2" placeholder="Ex: Arroz, feijão de caldo, tropeiro, salada e 2 proteínas" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical"></textarea></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">🍽️ Prato do Dia (por dia da semana)</div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">O formulário do cliente mostra automaticamente o prato do dia atual.</p>
+            <div style="font-size:11px;color:var(--gray-400);display:grid;grid-template-columns:75px 1fr 90px;gap:8px;margin-bottom:4px;padding:0 2px">
+              <span></span><span>Nome do prato</span><span>Preço (R$)</span>
+            </div>
+            <div id="pratos-form"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">🏘️ Bairros de Entrega</div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Os bairros aparecem no formulário do cliente e nos filtros.</p>
+            <div id="bairros-list"></div>
+            <button class="btn btn-sm btn-primary" onclick="bairroAdicionar()" style="margin-top:4px">+ Adicionar bairro</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">🥩 Adicionais de Proteína</div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Itens extras que o cliente pode adicionar ao pedido.</p>
+            <div id="proteinas-list"></div>
+            <button class="btn btn-sm btn-primary" onclick="adicionalAdicionar('proteina')" style="margin-top:4px">+ Adicionar proteína</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">🥤 Bebidas</div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Bebidas disponíveis para o cliente adicionar ao pedido.</p>
+            <div id="bebidas-list"></div>
+            <button class="btn btn-sm btn-primary" onclick="adicionalAdicionar('bebida')" style="margin-top:4px">+ Adicionar bebida</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">⏰ Horários de Entrega</div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px">Janelas de horário disponíveis no formulário e nas rotas do motoboy.</p>
+            <div id="horarios-list"></div>
+            <button class="btn btn-sm btn-primary" onclick="horarioAdicionar()" style="margin-top:4px">+ Adicionar horário</button>
+          </div>
+        </div>
+
+        <div id="cfg-ok" class="alert alert-success hidden">Configurações salvas!</div>
+        <div id="cfg-err" class="alert alert-error hidden"></div>
+        <button class="btn btn-primary btn-full btn-xl" onclick="cfgSalvar()">💾 Salvar Configurações</button>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="page" id="page-clientes">
+      <!-- TELA DE SENHA CLIENTES -->
+      <div id="cli-lock-screen">
+        <div class="card">
+          <div class="card-head">
+            <button class="btn btn-back" onclick="nav('home')">← Início</button>
+            <span class="card-head-title">👥 Clientes</span>
+          </div>
+          <div class="card-body cli-lock">
+            <div class="fin-lock-icon">🔐</div>
+            <h2>Área Restrita</h2>
+            <p>Digite a senha para acessar os clientes</p>
+            <div class="field" style="max-width:240px;margin:0 auto 12px">
+              <input type="password" id="cli-senha-input" placeholder="Senha" onkeydown="if(event.key==='Enter')cliVerificarSenha()">
+            </div>
+            <div id="cli-senha-err" class="alert alert-error hidden" style="max-width:240px;margin:0 auto 12px">Senha incorreta.</div>
+            <button class="btn btn-primary" onclick="cliVerificarSenha()">Entrar</button>
+          </div>
+        </div>
+      </div>
+      <!-- CONTEÚDO CLIENTES -->
+      <div id="cli-content" class="hidden">
+        <div class="card">
+          <div class="card-head">
+            <button class="btn btn-back" onclick="nav('home')">← Início</button>
+            <span class="card-head-title">👥 Clientes</span>
+            <button class="btn btn-back" onclick="cliLoad()">↺</button>
+          </div>
+          <div class="card-body" style="padding-bottom:8px">
+            <div class="filter-row">
+              <input type="text" id="cli-busca" placeholder="🔍 Nome ou telefone..." style="flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px" oninput="cliFiltrar()">
+              <select id="cli-filtro-bairro" onchange="cliFiltrar()" style="flex:1;min-width:130px;padding:7px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px">
+                <option value="">Todos os bairros</option>
+              </select>
+            </div>
+            <div class="filter-row" style="margin-bottom:4px">
+              <select id="cli-filtro-aniv" onchange="cliFiltrar()" style="flex:1;min-width:180px;padding:7px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px">
+                <option value="">🎂 Todos (sem filtro de aniversário)</option>
+                <option value="hoje">🎉 Aniversário hoje</option>
+                <option value="mes">🎁 Aniversário este mês</option>
+                <option value="tem">📋 Com aniversário cadastrado</option>
+              </select>
+            </div>
+            <div id="cli-count" style="font-size:12px;color:var(--gray-400);margin-bottom:4px"></div>
+          </div>
+        </div>
+        <div id="cli-lista"><div class="empty">Carregando...</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL MOTOBOY -->
+<div id="motoboy-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:var(--radius);width:100%;max-width:400px;overflow:hidden">
+    <div style="background:var(--green);color:#fff;padding:14px 16px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px">
+      🏍️ Motoboy
+      <button onclick="motoboyCardFechar()" style="margin-left:auto;background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <!-- lock -->
+    <div id="motoboy-modal-lock" style="padding:20px">
+      <div style="font-size:13px;color:var(--gray-600);margin-bottom:12px">Digite a senha para acessar o link do motoboy.</div>
+      <input type="password" id="motoboy-modal-senha" placeholder="Senha" style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:14px;margin-bottom:8px" onkeydown="if(event.key==='Enter')motoboyCardSenha()">
+      <div id="motoboy-modal-err" style="color:var(--red);font-size:12px;margin-bottom:8px;display:none">Senha incorreta.</div>
+      <button class="btn btn-success btn-full" onclick="motoboyCardSenha()">Entrar</button>
+    </div>
+    <!-- conteúdo -->
+    <div id="motoboy-modal-content" style="padding:20px;display:none">
+      <p style="font-size:13px;color:var(--gray-600);margin-bottom:10px">Mande esse link para o motoboy. Ele abre direto na tela de entregas.</p>
+      <div class="link-box" id="motoboy-link-url" style="word-break:break-all;font-size:12px;background:var(--gray-50);padding:10px;border-radius:var(--radius-sm);border:1px solid var(--gray-200);margin-bottom:12px">Carregando...</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-success btn-sm" onclick="copiarLinkMotoboy()">📋 Copiar</button>
+        <button class="btn btn-primary btn-sm" onclick="enviarLinkMotoboy()">💬 Enviar no WhatsApp</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHE PEDIDO -->
+<div id="modal-pedido" class="modal-bg hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="modal">
+    <div class="modal-head"><span>📋 Detalhe do Pedido</span><button class="btn btn-sm" onclick="closeModal('modal-pedido')">✕</button></div>
+    <div class="modal-body" id="modal-pedido-body"></div>
+    <div class="modal-foot" id="modal-pedido-foot"></div>
+  </div>
+</div>
+
+<!-- FORMULÁRIO DO CLIENTE -->
+<div id="page-formulario" style="display:none;min-height:100vh;background:#f0f4f8;font-family:'DM Sans',sans-serif">
+  <div style="background:var(--blue);color:#fff;padding:20px;text-align:center">
+    <img src="./logo.jpg" alt="Dona Leninha" class="form-logo" loading="lazy">
+    <div style="font-size:20px;font-weight:700;margin-top:10px">Restaurante Dona Leninha</div>
+    <div style="font-size:13px;opacity:.8;margin-top:4px">Faça seu pedido abaixo</div>
+  </div>
+  <div style="max-width:480px;margin:0 auto;padding:16px">
+
+    <div id="form-step1">
+      <div class="card">
+        <div class="card-head">📱 Seu telefone</div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--gray-600);margin-bottom:12px">Digite seu número com DDD. Se você já pediu antes, seus dados serão preenchidos automaticamente.</p>
+          <div class="field"><label>Telefone / WhatsApp</label><input type="tel" id="f-tel" placeholder="Ex: 71999999999" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+          <div id="f-tel-err" class="alert alert-error hidden">Digite um telefone válido.</div>
+          <button class="btn btn-primary btn-full btn-xl" onclick="formStep1()">Continuar →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="form-step2" class="hidden">
+      <div class="card">
+        <div class="card-head">👤 Seus dados</div>
+        <div class="card-body">
+          <div id="f-cliente-encontrado" class="alert alert-success hidden"></div>
+          <div class="field"><label>Nome completo</label><input type="text" id="f-nome" placeholder="Seu nome completo" autocomplete="name"></div>
+          <div class="field">
+            <label>Data de aniversário <span style="font-weight:400;color:var(--gray-400);font-size:11px">(opcional — para ganhar um miminho especial 🎁)</span></label>
+            <input type="date" id="f-aniversario" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--gray-900)">
+          </div>
+
+          <!-- BAIRRO COM AUTOCOMPLETE DA LISTA -->
+          <div class="field">
+            <label>Bairro</label>
+            <div style="position:relative">
+              <input type="text" id="f-bairro-busca" placeholder="Digite seu bairro..."
+                autocomplete="off" oninput="bairroInput(this)" onfocus="bairroInput(this)"
+                style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px">
+              <div id="f-bairro-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--gray-200);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:50;max-height:200px;overflow-y:auto"></div>
+            </div>
+            <input type="hidden" id="f-bairro">
+            <div id="f-bairro-fora" class="hidden" style="margin-top:8px;background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:#c2410c">
+              😕 <strong>Bairro fora da área de entrega.</strong><br>
+              <a id="f-bairro-fora-wa" href="#" target="_blank" style="color:var(--blue);font-weight:600;margin-top:4px;display:inline-block">💬 Falar no WhatsApp para verificar</a>
+            </div>
+          </div>
+
+          <!-- RUA E NÚMERO (aparecem após bairro selecionado) -->
+          <div id="f-end-wrap" class="hidden">
+            <div class="field">
+              <label>Nome da rua</label>
+              <input type="text" id="f-end" placeholder="Ex: Rua das Palmeiras" autocomplete="street-address"
+                style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px">
+              <div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e">
+                ⚠️ <strong>Atenção:</strong> use o nome oficial da rua como aparece no <strong>Google Maps ou Waze</strong>. Muitas ruas têm um apelido popular diferente do nome oficial — usar o nome errado pode atrasar sua entrega.
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="field">
+                <label>Número</label>
+                <input type="text" id="f-numero" placeholder="Ex: 27" inputmode="numeric"
+                  style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px">
+              </div>
+              <div class="field">
+                <label>Complemento <span style="font-weight:400;color:var(--gray-400);font-size:11px">(opcional)</span></label>
+                <input type="text" id="f-complemento" placeholder="Apto, fundos..."
+                  style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px">
+              </div>
+            </div>
+            <!-- CONFIRMAÇÃO DO ENDEREÇO COMPLETO -->
+            <div id="f-end-preview" class="hidden" style="background:var(--blue-light);border:1px solid #93c5fd;border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--blue);margin-top:4px">
+              📍 <span id="f-end-preview-txt"></span>
+            </div>
+          </div>
+
+          <div id="f-dados-err" class="alert alert-error hidden"></div>
+          <button class="btn btn-primary btn-full btn-xl" onclick="formStep2()">Continuar →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="form-step3" class="hidden">
+      <div class="card">
+        <div class="card-head">🍽️ Seu pedido</div>
+        <div class="card-body">
+          <div class="field"><label>Horário de entrega</label>
+            <select id="f-horario">
+              <option value="">Selecione o horário</option>
+            </select>
+            <div id="f-aviso-agora" style="display:none;margin-top:8px;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 12px;font-size:13px;color:#c2410c">
+              ⏰ <strong>Atenção:</strong> o horário <strong>Pedir Agora</strong> só fica disponível depois das 13h.
+            </div>
+          </div>
+          <div class="field"><label>O que você vai pedir?</label>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+
+              <!-- CARD MARMITA -->
+              <label id="opt-marmita" style="display:flex;flex-direction:column;gap:0;border:2px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:.15s">
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--white)">
+                  <input type="radio" name="f-produto" value="marmita" onchange="formSelecionarProduto(this)" style="accent-color:var(--blue);width:17px;height:17px;flex-shrink:0">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:14px">🍱 Marmita Completa</div>
+                    <div id="f-marmita-desc" style="font-size:12px;color:var(--gray-600);margin-top:2px;line-height:1.4"></div>
+                  </div>
+                  <div id="f-marmita-preco" style="font-weight:700;font-size:15px;color:var(--green);white-space:nowrap;flex-shrink:0">R$ 15,00</div>
+                </div>
+              </label>
+
+              <!-- CARD PRATO DO DIA -->
+              <label id="opt-prato" style="display:flex;flex-direction:column;gap:0;border:2px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:.15s">
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--white)">
+                  <input type="radio" name="f-produto" value="prato" onchange="formSelecionarProduto(this)" style="accent-color:var(--blue);width:17px;height:17px;flex-shrink:0">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:14px">🍽️ Prato do Dia</div>
+                    <div id="f-prato-desc" style="font-size:12px;color:var(--gray-600);margin-top:2px"></div>
+                  </div>
+                  <div id="f-prato-preco-badge" style="font-weight:700;font-size:15px;color:var(--green);white-space:nowrap;flex-shrink:0"></div>
+                </div>
+                <!-- SELECT DE OPÇÕES (quando há múltiplas) -->
+                <div id="f-prato-opcao-wrap" class="hidden" style="padding:0 14px 12px 14px;background:var(--gray-50);border-top:1px solid var(--gray-100)">
+                  <label style="font-size:11px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;margin-top:8px">Escolha a opção:</label>
+                  <select id="f-prato-opcao" onchange="formAtualizarTotal()" style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--white);color:var(--gray-900)"></select>
+                </div>
+              </label>
+
+            </div>
+          </div>
+          <div class="field">
+            <label>Quantidade</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <button type="button" onclick="formQtdChange(-1)" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--gray-200);background:var(--white);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">−</button>
+              <span id="f-qtd-val" style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;min-width:32px;text-align:center">1</span>
+              <button type="button" onclick="formQtdChange(1)" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--blue);background:var(--blue);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">+</button>
+            </div>
+          </div>
+          <!-- ADICIONAIS DE PROTEÍNA -->
+          <div id="f-proteinas-box" class="hidden" style="margin-bottom:4px">
+            <div style="font-weight:600;font-size:13px;margin-bottom:8px">Adicionais de proteína <span style="font-weight:400;color:var(--gray-400);font-size:12px">(opcional)</span></div>
+            <div id="f-proteinas-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+          <!-- ADICIONAIS DE BEBIDA -->
+          <div id="f-bebidas-box" class="hidden" style="margin-bottom:4px">
+            <div style="font-weight:600;font-size:13px;margin-bottom:8px">Bebidas <span style="font-weight:400;color:var(--gray-400);font-size:12px">(opcional)</span></div>
+            <div id="f-bebidas-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+          <!-- OBSERVAÇÃO -->
+          <div class="field">
+            <label>Observação <span style="font-weight:400;color:var(--gray-400);font-size:12px">(opcional)</span></label>
+            <textarea id="f-obs" placeholder="Ex: sem cebola, pouco sal, sem pimenta..." rows="2" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical"></textarea>
+          </div>
+          <!-- FORMA DE PAGAMENTO -->
+          <div class="field"><label>Forma de pagamento</label>
+            <select id="f-pagamento" onchange="formMostrarPix()">
+              <option value="">Selecione</option>
+              <option>PIX</option>
+              <option>Dinheiro</option>
+              <option>Cartão</option>
+            </select>
+          </div>
+          <div id="f-pix-info" class="pix-info-box hidden">
+            Pagamento por PIX — após enviar seu pedido, você será direcionado ao nosso WhatsApp para confirmar o pagamento.
+          </div>
+          <div id="f-troco-box" class="hidden" style="background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius-sm);padding:12px;margin-bottom:4px">
+            <div style="font-weight:600;font-size:13px;color:#c2410c;margin-bottom:10px">💵 Pagamento em dinheiro</div>
+            <div style="font-size:13px;margin-bottom:8px">Você vai precisar de troco?</div>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <button type="button" id="f-troco-nao" class="btn btn-sm" onclick="formTrocoSel(false)" style="flex:1">Não, tenho o valor exato</button>
+              <button type="button" id="f-troco-sim" class="btn btn-sm" onclick="formTrocoSel(true)" style="flex:1">Sim, preciso de troco</button>
+            </div>
+            <div id="f-troco-campo" class="hidden">
+              <div class="field" style="margin-bottom:6px">
+                <label>Vou pagar com quanto?</label>
+                <input type="number" id="f-pagar-com" placeholder="Ex: 20.00" step="0.01" min="0" oninput="formCalcTroco()" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px">
+              </div>
+              <div id="f-troco-result" style="font-size:13px;color:#15803d;font-weight:600"></div>
+            </div>
+          </div>
+          <div id="f-pedido-err" class="alert alert-error hidden">Preencha todos os campos do pedido.</div>
+          <div style="height:80px"></div><!-- espaço pra barra fixa não cobrir conteúdo -->
+        </div>
+      </div>
+    </div>
+
+    <!-- BARRA FIXA INFERIOR — step3 -->
+    <div id="f-barra-bottom" class="hidden" style="position:fixed;bottom:0;left:0;right:0;z-index:999;display:flex;justify-content:center;pointer-events:none">
+      <div style="width:100%;max-width:480px;background:#fff;border-top:1px solid #e5e7eb;padding:12px 16px;display:flex;align-items:center;gap:12px;pointer-events:all">
+        <div style="flex:1">
+          <div style="font-size:11px;color:#9ca3af;font-weight:500;text-transform:uppercase;letter-spacing:.5px">Total</div>
+          <div id="f-total-val" style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:#111;line-height:1.1">R$ 0,00</div>
+        </div>
+        <button class="btn btn-success" onclick="formEnviar()" id="f-btn-enviar" style="flex:1.4;padding:14px;font-size:15px;font-weight:700;border-radius:10px">Enviar Pedido</button>
+      </div>
+    </div>
+    </div>
+
+    <!-- TELA SUCESSO / CHECKOUT -->
+    <div id="form-sucesso" class="hidden">
+      <div class="card" style="max-width:480px;margin:0 auto">
+        <div class="card-body" style="text-align:center;padding:32px 24px">
+          <div style="font-size:52px;margin-bottom:12px">✅</div>
+          <div style="font-size:20px;font-weight:700;margin-bottom:16px">Pedido confirmado!</div>
+          <!-- RESUMO DO PEDIDO -->
+          <div id="f-resumo" style="background:var(--gray-50);border-radius:var(--radius-sm);padding:14px;text-align:left;margin-bottom:16px;font-size:13px;display:flex;flex-direction:column;gap:6px"></div>
+          <div id="f-msg-sucesso" style="font-size:13px;color:var(--gray-600);margin-bottom:16px"></div>
+          <div id="f-pix-redirect" class="hidden" style="margin-bottom:16px">
+            <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:var(--radius-sm);padding:12px;font-size:13px;color:#92400e;margin-bottom:12px">
+              Redirecionando para o WhatsApp em <span id="f-countdown">8</span>s...
+            </div>
+            <a id="f-wa-link" href="#" target="_blank" class="btn btn-success btn-full">💬 Abrir WhatsApp agora</a>
+          </div>
+          <button class="btn btn-primary" onclick="formNovoPedido()">Fazer outro pedido</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, query, where, orderBy, getDoc, setDoc, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBZZkstzJd0lc6Zqu2ZIC0odSuIlddVFAc",
+  authDomain: "app-de-rota-marmitex.firebaseapp.com",
+  projectId: "app-de-rota-marmitex",
+  storageBucket: "app-de-rota-marmitex.firebasestorage.app",
+  messagingSenderId: "786350564448",
+  appId: "1:786350564448:web:021063fae58a77bb8f8f05"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+window.db = db;
+window.fbLib = { collection, doc, addDoc, updateDoc, deleteDoc, getDocs, query, where, orderBy, getDoc, setDoc, onSnapshot };
+
+window.addEventListener('load', () => {
+  const loadingEl = document.getElementById('loading');
+  if(loadingEl) loadingEl.style.display = 'none';
+});
+
+const params = new URLSearchParams(window.location.search);
+const tela = params.get('tela');
+
+if(tela === 'formulario'){
+  document.getElementById('page-formulario').style.display = 'block';
+  window.formInit();
+} else if(tela === 'motoboy'){
+  document.getElementById('app').style.display = 'flex';
+  window._isMotoboy = true;
+  window._fbReadyFired = true;
+  window.dispatchEvent(new Event('fb-ready'));
+  setTimeout(()=>window.nav('motoboy'), 100);
+} else {
+  document.getElementById('app').style.display = 'flex';
+  window._fbReadyFired = true;
+  window.dispatchEvent(new Event('fb-ready'));
+}
+</script>
+
+<script>
+// ─── RELÓGIO ─────────────────────────────────────────────────
+function updateClock(){
+  const el=document.getElementById('clock');
+  if(el) el.textContent=new Date().toLocaleDateString('pt-BR')+' '+new Date().toTimeString().slice(0,5);
+}
+updateClock(); setInterval(updateClock,1000);
+
+// ─── VARIÁVEIS GLOBAIS DE ESTADO E CONTROLE ──────────────────
+var _pollingTimer=null;
+var _pixCountdownTimer=null;
+var _audioCtx=null;
+var _isMotoboy=false;
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function showAlert(id,msg,type='error'){
+  const el=document.getElementById(id); if(!el) return;
+  el.className='alert alert-'+type; el.textContent=msg; el.classList.remove('hidden');
+}
+function hideAlert(id){ document.getElementById(id)?.classList.add('hidden'); }
+function closeModal(id){ document.getElementById(id)?.classList.add('hidden'); }
+window.closeModal=closeModal;
+
+function getHojeStr(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function getDiaSemana(){
+  return ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
+}
+function fmtMoeda(v){
+  return 'R$ '+Number(v||0).toFixed(2).replace('.',',');
+}
+function getBaseUrl(){
+  return window.location.href.split('?')[0];
+}
+
+// ─── BADGE STATUS ─────────────────────────────────────────────
+function badgeStatus(s){
+  const map={
+    'Aguardando PIX':'badge-aguardando',
+    'PIX Confirmado':'badge-confirmado',
+    'Confirmado':'badge-confirmado',
+    'Entregue':'badge-entregue',
+    'Cancelado':'badge-cancelado'
+  };
+  return `<span class="badge ${map[s]||'badge-aguardando'}">${s}</span>`;
+}
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────────
+function nav(p){
+  if(window._pollingTimer){ clearInterval(window._pollingTimer); window._pollingTimer=null; }
+  // Se for motoboy, bloqueia navegar pra qualquer outra coisa
+  if(window._isMotoboy && p!=='motoboy'){ return; }
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const pg=document.getElementById('page-'+p);
+  if(pg) pg.classList.add('active');
+  if(p==='pedidos'){ pedidosLoad(); zerarBadgeNovos(); }
+  if(p==='rotas') rotasLoad();
+  if(p==='motoboy') motoboyLoad();
+  if(p==='config') cfgAbrir();
+  if(p==='home') homeStats();
+  if(p==='financeiro') finAbrir();
+  if(p==='clientes') cliAbrir();
+}
+window.nav=nav;
+
+function navPedidos(){ nav('pedidos'); }
+window.navPedidos=navPedidos;
+
+// ─── HORÁRIOS ─────────────────────────────────────────────────
+let horariosCache=['11h00 às 11h30','11h30 às 12h00','12h00 às 12h30','12h30 às 13h00'];
+
+// ─── NOTIFICAÇÕES ─────────────────────────────────────────────
+async function pedirPermissaoNotificacoes(){
+  try {
+    if(!('Notification' in window)){ console.warn('Notificações não suportadas'); return; }
+    if(Notification.permission==='granted') return;
+    if(Notification.permission==='denied') return;
+    const perm=await Notification.requestPermission();
+    const banner=document.getElementById('notif-banner');
+    if(banner) banner.style.display='none';
+    if(perm==='granted') mostrarNotificacaoSistema('✅ Notificações ativadas!','Você receberá alertas de novos pedidos.');
+    // Tenta também conceder permissão de Periodic Background Sync (PWA instalado)
+    try{
+      if('permissions' in navigator){
+        await navigator.permissions.query({name:'periodic-background-sync'});
+      }
+    }catch(_){}
+  } catch(e){ console.error('pedirPermissaoNotificacoes erro:',e); }
+}
+window.pedirPermissaoNotificacoes=pedirPermissaoNotificacoes;
+
+async function mostrarNotificacaoSistema(titulo, corpo){
+  try {
+    if(!('Notification' in window)||Notification.permission!=='granted') return;
+    // Usa SW registration.showNotification() — único método que o Android
+    // entrega quando o PWA está minimizado. new Notification() é bloqueado
+    // pelo Chrome mobile em segundo plano.
+    if('serviceWorker' in navigator){
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(titulo,{
+        body: corpo,
+        icon: './logo.jpg',
+        badge: './logo.jpg',
+        vibrate: [200,100,200,100,200],
+        requireInteraction: false,
+        tag: 'novo-pedido',
+        renotify: true
+      });
+    } else {
+      new Notification(titulo,{body:corpo,icon:'./logo.jpg'});
+    }
+  } catch(e){ console.error('mostrarNotificacaoSistema erro:',e); }
+}
+
+function iniciarBannerNotificacao(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission==='granted'||Notification.permission==='denied') return;
+  const banner=document.getElementById('notif-banner');
+  if(banner) banner.style.display='flex';
+}
+
+// ─── MONITOR EM TEMPO REAL ────────────────────────────────────
+let _unsubscribeMonitor=null;
+window._unsubscribeMonitor=null;
+let _ultimoPedidoId=null;
+
+function iniciarMonitorPedidos(){
+  try {
+    if(typeof _unsubscribeMonitor==='function'){ _unsubscribeMonitor(); _unsubscribeMonitor=null; }
+    const {collection,query,orderBy,limit,onSnapshot}=window.fbLib;
+    const q=query(collection(window.db,'pedidos'),orderBy('criadoEm','desc'),limit(1));
+    let _primeiroDisparo=true;
+    _unsubscribeMonitor=onSnapshot(q,(snap)=>{
+      snap.docChanges().forEach(change=>{
+        if(change.type==='added'){
+          // Ignorar o primeiro disparo do onSnapshot (apenas sincronização inicial)
+          if(_primeiroDisparo){ _ultimoPedidoId=change.doc.id; window._ultimoPedidoId=_ultimoPedidoId; _primeiroDisparo=false; return; }
+          const p=change.doc.data();
+          const id=change.doc.id;
+          if(id===_ultimoPedidoId) return;
+          // Ignora pedidos antigos: só notifica se criadoEm for de até 2 minutos atrás
+          if(p.criadoEm){
+            const criado=new Date(p.criadoEm).getTime();
+            if(!isNaN(criado) && (Date.now()-criado) > 120000){ _ultimoPedidoId=id; window._ultimoPedidoId=id; return; }
+          }
+          _ultimoPedidoId=id;
+          window._ultimoPedidoId=id;
+          tocarSomNovoPedido();
+          const popup=document.getElementById('notif-popup');
+          if(popup){
+            const el=document.getElementById('notif-nome');
+            if(el) el.textContent=`${p.nome} — ${p.nomeProduto} (${p.horario})`;
+            popup.style.display='flex';
+            setTimeout(notifFechar,12000);
+          }
+        }
+      });
+      _primeiroDisparo=false;
+    });
+    console.log('Monitor de pedidos iniciado');
+  } catch(e){ console.error('iniciarMonitorPedidos erro:',e); }
+}
+
+function getHorarios(){
+  return horariosCache;
+}
+
+function popularSelectHorarios(){
+  // Popula filtro na aba pedidos
+  const sel=document.getElementById('filtro-horario');
+  if(sel){
+    const val=sel.value;
+    sel.innerHTML='<option value="">Todos os horários</option>';
+    horariosCache.forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent=h; if(h===val)o.selected=true; sel.appendChild(o); });
+  }
+  // Popula select no formulário do cliente
+  const fSel=document.getElementById('f-horario');
+  if(fSel){
+    const val2=fSel.value;
+    fSel.innerHTML='<option value="">Selecione o horário</option>';
+    // "Pedir Agora" sempre visível — a observação no texto orienta o cliente
+    const oAgora=document.createElement('option');
+    oAgora.value='Agora';
+    oAgora.textContent='🕐 Pedir Agora — disponível a partir das 13h';
+    if(val2==='Agora') oAgora.selected=true;
+    fSel.appendChild(oAgora);
+    // 4 horários normais, sempre habilitados
+    horariosCache.forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent=h; if(h===val2)o.selected=true; fSel.appendChild(o); });
+  }
+}
+window.popularSelectHorarios=popularSelectHorarios;
+
+// ─── GERAR ROTAS ─────────────────────────────────────────────
+function gerarRotas(pedidos){
+  const ativos=pedidos.filter(p=>p.status!=='Cancelado'&&p.status!=='Entregue'&&p.status!=='Aguardando PIX');
+  const grupos={};
+  ativos.forEach(p=>{
+    if(!grupos[p.horario]) grupos[p.horario]=[];
+    grupos[p.horario].push(p);
+  });
+  return Object.keys(grupos).sort().map(h=>({
+    horario:h,
+    pedidos:grupos[h].sort((a,b)=>(a.criadoEm||'').localeCompare(b.criadoEm||''))
+  }));
+}
+
+// ─── NOTIFICAÇÃO NOVO PEDIDO ─────────────────────────────────
+let notifPedidoId=null;
+let notifTimer=null;
+
+function notifMostrar(pedido){
+  notifPedidoId=pedido.id;
+  const body=document.getElementById('notif-body');
+  if(body) body.textContent=`${pedido.nome||'Cliente'} — ${pedido.nomeProduto||pedido.produto||''} — ${pedido.horario||''}`;
+  const popup=document.getElementById('notif-popup');
+  popup.style.display='block';
+  tocarSom();
+  if(notifTimer) clearTimeout(notifTimer);
+  notifTimer=setTimeout(notifFechar, 12000);
+}
+
+function notifFechar(){
+  document.getElementById('notif-popup').style.display='none';
+  notifPedidoId=null;
+}
+window.notifFechar=notifFechar;
+
+function notifVerPedido(){
+  notifFechar();
+  nav('pedidos');
+}
+window.notifVerPedido=notifVerPedido;
+
+// FIX 8: Inicializa AudioContext na primeira interação do usuário (desbloqueio mobile)
+document.addEventListener('click', function _initAudio(){
+  try {
+    if(!_audioCtx||_audioCtx.state==='closed'){
+      _audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    }
+    if(_audioCtx.state==='suspended') _audioCtx.resume();
+  } catch(e){}
+  document.removeEventListener('click', _initAudio);
+}, {once:true});
+
+function tocarSomNovoPedido(){ tocarSom(); }
+window.tocarSomNovoPedido=tocarSomNovoPedido;
+function tocarSom(){
+  try {
+    if(!_audioCtx||_audioCtx.state==='closed') _audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(_audioCtx.state==='suspended') _audioCtx.resume();
+    const ctx=_audioCtx;
+    [0,150,300].forEach((delay,i)=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value=i===0?880:i===1?1050:1320;
+      osc.type='sine';
+      gain.gain.setValueAtTime(0.3,ctx.currentTime+delay/1000);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay/1000+0.25);
+      osc.start(ctx.currentTime+delay/1000);
+      osc.stop(ctx.currentTime+delay/1000+0.25);
+    });
+  } catch(e){}
+}
+
+// ─── BADGE NOVOS PEDIDOS ──────────────────────────────────────
+let pedidosVistos=new Set();
+let qtdNovos=0;
+
+function atualizarBadgeNovos(pedidosNovos){
+  const novos=pedidosNovos.filter(p=>!pedidosVistos.has(p.id));
+  if(novos.length>0){
+    qtdNovos+=novos.length;
+    novos.forEach(p=>pedidosVistos.add(p.id));
+    const badge=document.getElementById('badge-novos');
+    if(badge){ badge.textContent=qtdNovos; badge.classList.remove('hidden'); }
+    novos.forEach(p=>notifMostrar(p));
+  }
+}
+
+function zerarBadgeNovos(){
+  qtdNovos=0;
+  const badge=document.getElementById('badge-novos');
+  if(badge) badge.classList.add('hidden');
+}
+
+// ─── HOME ─────────────────────────────────────────────────────
+let cfgCache=null;
+let homeInicializado=false;
+let homeInicializadoDia='';
+
+async function homeStats(){
+  const base=getBaseUrl();
+  const el=document.getElementById('form-link-home');
+  if(el) el.textContent=base+'?tela=formulario';
+
+  try {
+    const {collection,getDocs,query,where,orderBy}=window.fbLib;
+    const hoje=getHojeStr();
+    // FIX 1: Filtro de data no Firestore — nunca carrega coleção inteira
+    let snap;
+    try {
+      snap=await getDocs(query(collection(window.db,'pedidos'),where('criadoEm','>=',hoje+'T00:00:00'),where('criadoEm','<=',hoje+'T23:59:59'),orderBy('criadoEm','desc')));
+    } catch(indexErr){
+      snap=await getDocs(query(collection(window.db,'pedidos'),where('criadoEm','>=',hoje+'T00:00:00'),where('criadoEm','<=',hoje+'T23:59:59')));
+    }
+    const todos=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+    document.getElementById('st-total').textContent=todos.length;
+    const pixPend=todos.filter(p=>p.status==='Aguardando PIX').length;
+    document.getElementById('st-pix').textContent=pixPend;
+    document.getElementById('st-entregues').textContent=todos.filter(p=>p.status==='Entregue').length;
+    document.getElementById('st-cancelados').textContent=todos.filter(p=>p.status==='Cancelado').length;
+    const banner=document.getElementById('pix-pendente-banner');
+    if(banner){
+      if(pixPend>0) banner.classList.remove('hidden');
+      else banner.classList.add('hidden');
+    }
+
+    const diaAtual=getHojeStr();
+    if(!homeInicializado||homeInicializadoDia!==diaAtual){
+      pedidosVistos=new Set(); qtdNovos=0;
+      todos.forEach(p=>pedidosVistos.add(p.id));
+      homeInicializado=true; homeInicializadoDia=diaAtual;
+    } else {
+      // Cargas seguintes: notifica apenas pedidos realmente novos
+      const novos=todos.filter(p=>!pedidosVistos.has(p.id));
+      if(novos.length>0) atualizarBadgeNovos(novos);
+    }
+  } catch(e){ console.error(e); }
+}
+window.homeStats=homeStats;
+
+function copiarLinkFormulario(){
+  const url=getBaseUrl()+'?tela=formulario';
+  navigator.clipboard.writeText(url).then(()=>alert('Link copiado!')).catch(()=>prompt('Copie o link:',url));
+}
+window.copiarLinkFormulario=copiarLinkFormulario;
+
+function compartilharFormulario(){
+  const url=getBaseUrl()+'?tela=formulario';
+  const msg=encodeURIComponent('🍱 *Dona Leninha*\nFaça seu pedido agora 👇\n'+url);
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+window.compartilharFormulario=compartilharFormulario;
+
+function motoboyCardAbrir(){
+  document.getElementById('motoboy-modal').style.display='flex';
+  document.getElementById('motoboy-modal-lock').style.display='block';
+  document.getElementById('motoboy-modal-content').style.display='none';
+  document.getElementById('motoboy-modal-senha').value='';
+  document.getElementById('motoboy-modal-err').style.display='none';
+  setTimeout(()=>document.getElementById('motoboy-modal-senha').focus(),100);
+}
+window.motoboyCardAbrir=motoboyCardAbrir;
+
+function motoboyCardFechar(){
+  document.getElementById('motoboy-modal').style.display='none';
+  document.getElementById('motoboy-modal-lock').style.display='block';
+  document.getElementById('motoboy-modal-content').style.display='none';
+}
+window.motoboyCardFechar=motoboyCardFechar;
+
+async function motoboyCardSenha(){
+  try {
+
+  const v=document.getElementById('motoboy-modal-senha').value;
+  if(await senhaCorreta(v)){
+    document.getElementById('motoboy-modal-lock').style.display='none';
+    document.getElementById('motoboy-modal-content').style.display='block';
+    const base=getBaseUrl();
+    document.getElementById('motoboy-link-url').textContent=base+'?tela=motoboy';
+  } else {
+    document.getElementById('motoboy-modal-err').style.display='block';
+    document.getElementById('motoboy-modal-senha').value='';
+    document.getElementById('motoboy-modal-senha').focus();
+  }
+
+  } catch(e) {
+    console.error('motoboyCardSenha erro:', e);
+  }
+}
+window.motoboyCardSenha=motoboyCardSenha;
+
+function copiarLinkMotoboy(){
+  const url=getBaseUrl()+'?tela=motoboy';
+  navigator.clipboard.writeText(url).then(()=>alert('Link copiado!')).catch(()=>prompt('Copie:',url));
+}
+window.copiarLinkMotoboy=copiarLinkMotoboy;
+
+function enviarLinkMotoboy(){
+  const url=getBaseUrl()+'?tela=motoboy';
+  window.open('https://wa.me/?text='+encodeURIComponent('Sua tela de entregas: '+url),'_blank');
+}
+window.enviarLinkMotoboy=enviarLinkMotoboy;
+
+// ─── ATUALIZAÇÃO AUTOMÁTICA (polling inteligente) ────────────
+// _pollingTimer declarado no topo do script
+
+function iniciarPolling(){
+  function tick(){
+    if(document.visibilityState==='hidden') return; // Para quando aba está em segundo plano
+    const homeAtivo=document.getElementById('page-home')?.classList.contains('active');
+    const pedidosAtivo=document.getElementById('page-pedidos')?.classList.contains('active');
+    if(homeAtivo) homeStats();
+    if(pedidosAtivo) pedidosLoad();
+  }
+  _pollingTimer=setInterval(tick, 60000); // 60s em vez de 30s
+  // Ao voltar pra aba, atualiza imediatamente
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'){
+      const homeAtivo=document.getElementById('page-home')?.classList.contains('active');
+      const pedidosAtivo=document.getElementById('page-pedidos')?.classList.contains('active');
+      if(homeAtivo) homeStats();
+      if(pedidosAtivo) pedidosLoad();
+    }
+  });
+}
+
+// ─── PEDIDOS ─────────────────────────────────────────────────
+let pedidosCache=[];
+
+async function pedidosLoad(){
+  document.getElementById('pedidos-tbody').innerHTML='<tr><td colspan="8"><div class="empty">Carregando...</div></td></tr>';
+  try {
+    const {collection,getDocs,query,where,orderBy}=window.fbLib;
+    const hoje=getHojeStr();
+    // FIX 2: Filtro de data no Firestore — só pedidos de hoje
+    const snap=await getDocs(query(collection(window.db,'pedidos'),where('criadoEm','>=',hoje+'T00:00:00'),where('criadoEm','<=',hoje+'T23:59:59'),orderBy('criadoEm','desc')));
+    pedidosCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    pedidosFiltrar();
+    popularSelectHorarios();
+    popularSelectBairros();
+  } catch(e){
+    document.getElementById('pedidos-tbody').innerHTML=`<tr><td colspan="8"><div class="empty">Erro: ${e.message}</div></td></tr>`;
+  }
+}
+window.pedidosLoad=pedidosLoad;
+
+function pedidosFiltrar(){
+  if(!Array.isArray(pedidosCache)) return;
+  const fH=document.getElementById('filtro-horario')?.value||'';
+  const fS=document.getElementById('filtro-status')?.value||'';
+  const fB=document.getElementById('filtro-bairro')?.value||'';
+  let lista=pedidosCache.filter(p=>{
+    if(fH&&p.horario!==fH) return false;
+    if(fS&&p.status!==fS) return false;
+    if(fB&&(p.bairro||'').trim()!==fB.trim()) return false;
+    return true;
+  });
+  if(!lista.length){
+    document.getElementById('pedidos-tbody').innerHTML='<tr><td colspan="8"><div class="empty">Nenhum pedido.</div></td></tr>';
+    return;
+  }
+  document.getElementById('pedidos-tbody').innerHTML=lista.map((p,i)=>`
+    <tr>
+      <td style="font-family:'DM Mono',monospace;font-weight:500;color:var(--blue)">${i+1}</td>
+      <td>
+        <div style="font-weight:500">${escHtml(p.nome)||'—'}</div>
+        <div style="font-size:11px;color:var(--gray-400)">${escHtml(p.telefone||'')}</div>
+      </td>
+      <td style="font-size:12px;white-space:nowrap">${escHtml(p.horario||'—')}</td>
+      <td>${escHtml(p.bairro||'—')}</td>
+      <td style="font-size:12px">${escHtml(p.nomeProduto||p.produto||'—')}${p.quantidade>1?' x'+p.quantidade:''}</td>
+      <td style="font-size:12px">${escHtml(p.pagamento||'—')}</td>
+      <td>${badgeStatus(p.status||'Aguardando PIX')}</td>
+      <td>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="abrirDetalhe('${p.id}')" aria-label="Ver detalhes do pedido">👁</button>
+          ${p.status==='Aguardando PIX'?`<button class="btn btn-sm btn-orange" onclick="confirmarPix('${p.id}','${(p.telefone||'').replace(/'/g,"\\'")}','${(p.nome||'').replace(/'/g,"\\'")}') " aria-label="Confirmar PIX">✅ PIX</button>`:''}
+          <select class="status-sel" onchange="pedidoMudarStatus('${p.id}',this.value)" aria-label="Mudar status do pedido">
+            <option ${p.status==='Aguardando PIX'?'selected':''}>Aguardando PIX</option>
+            <option ${p.status==='PIX Confirmado'?'selected':''}>PIX Confirmado</option>
+            <option ${p.status==='Confirmado'?'selected':''}>Confirmado</option>
+            <option ${p.status==='Entregue'?'selected':''}>Entregue</option>
+            <option ${p.status==='Cancelado'?'selected':''}>Cancelado</option>
+          </select>
+          <button class="btn btn-sm btn-danger" onclick="excluirPedido('${p.id}')" aria-label="Excluir pedido" title="Excluir">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+window.pedidosFiltrar=pedidosFiltrar;
+
+async function pedidoMudarStatus(id,status){
+  try {
+    const {doc,updateDoc}=window.fbLib;
+    await updateDoc(doc(window.db,'pedidos',id),{status});
+    const p=pedidosCache.find(x=>x.id===id);
+    if(p) p.status=status;
+    pedidosFiltrar();
+    homeStats();
+  } catch(e){ alert('Erro: '+e.message); }
+}
+window.pedidoMudarStatus=pedidoMudarStatus;
+
+async function excluirPedido(id){
+  const p=pedidosCache.find(x=>x.id===id);
+  const nome=p?.nome||'este pedido';
+  modalSenhaAbrir(`Excluir o pedido de "${nome}"? Não pode desfazer.`,'🗑️ Excluir pedido',async()=>{
+    try {
+      const {doc,deleteDoc}=window.fbLib;
+      await deleteDoc(doc(window.db,'pedidos',id));
+      pedidosCache=pedidosCache.filter(p=>p.id!==id);
+      pedidosFiltrar();
+      homeStats();
+    } catch(e){ alert('Erro ao excluir: '+e.message); }
+  });
+}
+window.excluirPedido=excluirPedido;
+
+async function confirmarPix(id,telefone,nome){
+  const _btnKey='_pixBusy_'+id;
+  if(window[_btnKey]) return;
+  window[_btnKey]=true;
+  setTimeout(()=>{window[_btnKey]=false;},4000);
+  try {
+    const {doc,updateDoc}=window.fbLib;
+    await updateDoc(doc(window.db,'pedidos',id),{status:'PIX Confirmado'});
+    const p=pedidosCache.find(x=>x.id===id);
+    if(p) p.status='PIX Confirmado';
+    pedidosFiltrar();
+    homeStats();
+    const tel=(telefone||'').replace(/\D/g,'');
+    const primeiroNome=(nome||'').split(' ')[0];
+    const msg=encodeURIComponent('Olá '+primeiroNome+'! Seu PIX foi confirmado. Seu pedido já está sendo preparado e sairá para entrega no horário combinado.');
+    if(tel.length>=10) window.open('https://wa.me/55'+tel+'?text='+msg,'_blank');
+  } catch(e){ alert('Erro: '+e.message); }
+}
+window.confirmarPix=confirmarPix;
+
+function abrirDetalhe(id){
+  const p=pedidosCache.find(x=>x.id===id);
+  if(!p) return;
+  const esc=escHtml;
+  document.getElementById('modal-pedido-body').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+      <div><strong>Nome:</strong> ${esc(p.nome)||'—'}</div>
+      <div><strong>Telefone:</strong> <a href="tel:${esc(p.telefone)}" style="color:var(--blue)">${esc(p.telefone)||'—'}</a></div>
+      <div><strong>Horário:</strong> ${esc(p.horario)||'—'}</div>
+      <div><strong>Bairro:</strong> ${esc(p.bairro)||'—'}</div>
+      <div><strong>Endereço:</strong> ${esc(p.endereco)||'—'}${p.numero?', Nº '+esc(p.numero):''}${p.complemento?', '+esc(p.complemento):''}</div>
+      <div><strong>Produto:</strong> ${esc(p.nomeProduto||p.produto||'—')}${p.quantidade>1?' x'+p.quantidade:''}</div>
+      ${p.adicionaisProteina?.length?`<div><strong>Proteínas:</strong> ${p.adicionaisProteina.map(a=>esc((a.qty>1?a.qty+'x ':'')+a.nome)).join(', ')}</div>`:''}
+      ${p.adicionaisBebida?.length?`<div><strong>Bebidas:</strong> ${p.adicionaisBebida.map(a=>esc((a.qty>1?a.qty+'x ':'')+a.nome)).join(', ')}</div>`:''}
+      ${p.observacao?`<div><strong>Obs:</strong> <em>${esc(p.observacao)}</em></div>`:''}
+      <div><strong>Total:</strong> <span style="font-weight:700;color:var(--blue)">${p.totalPedido?fmtMoeda(p.totalPedido):p.preco?fmtMoeda(p.preco):'—'}</span></div>
+      ${p.troco!=null?`<div><strong>Troco:</strong> ${fmtMoeda(p.troco)} (pagando com ${fmtMoeda(p.pagarCom)})</div>`:''}
+      <div><strong>Pagamento:</strong> ${esc(p.pagamento||'—')}</div>
+      <div><strong>Status:</strong> ${badgeStatus(p.status||'Aguardando PIX')}</div>
+      <div><strong>Data:</strong> ${p.criadoEm?new Date(p.criadoEm).toLocaleString('pt-BR'):'—'}</div>
+      ${p.clienteNovo?'<div class="alert alert-info" style="margin:0">🆕 Cliente novo</div>':''}
+    </div>`;
+  const foot=document.getElementById('modal-pedido-foot');
+  let btns=`<button class="btn btn-full" onclick="closeModal('modal-pedido')">Fechar</button>`;
+  if(p.status==='Aguardando PIX'){
+    const tel=(p.telefone||'').replace(/\D/g,'');
+    
+    const msgPix=encodeURIComponent(`Olá ${(p.nome||'').split(' ')[0]}! Recebemos seu pedido. Para confirmar, efetue o pagamento via PIX e envie o comprovante aqui. Obrigado!`);
+    btns=`<a href="https://wa.me/55${tel}?text=${msgPix}" target="_blank" class="btn btn-success btn-full">💬 Avisar cliente via WhatsApp</a>`+btns;
+  }
+  foot.innerHTML=btns;
+  document.getElementById('modal-pedido').classList.remove('hidden');
+}
+window.abrirDetalhe=abrirDetalhe;
+
+// ─── ROTAS ────────────────────────────────────────────────────
+async function rotasLoad(){
+  document.getElementById('rotas-content').innerHTML='<div class="empty">Carregando...</div>';
+  document.getElementById('rotas-alert').classList.add('hidden');
+  try {
+    const {collection,getDocs,query,where,orderBy}=window.fbLib;
+    const hoje=getHojeStr();
+    // FIX: filtro de data + só pedidos ativos (não cancelados/entregues)
+    const snap=await getDocs(query(collection(window.db,'pedidos'),where('criadoEm','>=',hoje+'T00:00:00'),where('criadoEm','<=',hoje+'T23:59:59'),orderBy('criadoEm','asc')));
+    const pedidos=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const rotas=gerarRotas(pedidos);
+    if(!rotas.length){
+      document.getElementById('rotas-alert').classList.remove('hidden');
+      document.getElementById('rotas-content').innerHTML='';
+      return;
+    }
+    const cfg=await cfgGetCached();
+    const origem=cfg?.endereco||'';
+    // Otimiza cada horário por GPS (igual ao motoboy)
+    const rotasOtimizadas=[];
+    for(const r of rotas){
+      document.getElementById('rotas-content').innerHTML=`<div class="empty">Calculando rota para ${r.horario}...</div>`;
+      const otimizados=await otimizarRota([...r.pedidos],origem);
+      rotasOtimizadas.push({horario:r.horario,pedidos:otimizados});
+    }
+    document.getElementById('rotas-content').innerHTML=rotasOtimizadas.map(r=>`
+      <div style="margin-bottom:20px">
+        <div class="rota-header">
+          <div class="rota-horario">⏰ ${r.horario}</div>
+          <div class="rota-count">${r.pedidos.length} entrega(s)</div>
+        </div>
+        ${r.pedidos.map((p,i)=>`
+          <div class="entrega-card">
+            <div class="entrega-num">${i+1}</div>
+            <div class="entrega-info">
+              <div class="entrega-nome">${escHtml(p.nome)}</div>
+              <div class="entrega-end">📍 ${escHtml(p.endereco)}${p.numero?', Nº '+escHtml(p.numero):''}, ${escHtml(p.bairro)}</div>
+              <div class="entrega-tags">
+                <span class="tag">${escHtml(p.bairro)}</span>
+                <span class="tag">${escHtml(p.nomeProduto||p.produto)}</span>
+                <span class="tag">${escHtml(p.pagamento)}</span>
+                <span class="tag">${badgeStatus(p.status)}</span>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`).join('');
+  } catch(e){
+    document.getElementById('rotas-content').innerHTML=`<div class="empty">Erro: ${e.message}</div>`;
+  }
+}
+window.rotasLoad=rotasLoad;
+
+// ─── MOTOBOY ─────────────────────────────────────────────────
+let motoboyRotas=[];
+let motoboyRotaSel=null;
+
+async function motoboyLoad(){
+  const tabsEl=document.getElementById('motoboy-tabs');
+  const alertEl=document.getElementById('motoboy-alert');
+  tabsEl.innerHTML='<div class="empty">Carregando...</div>';
+  alertEl.classList.add('hidden');
+  document.getElementById('motoboy-horario-sel').classList.remove('hidden');
+  document.getElementById('motoboy-rota-view').classList.add('hidden');
+
+  const cfg=await cfgGetCached();
+  const origem=cfg?.endereco||'';
+  document.getElementById('motoboy-origem').textContent=origem||'(configure o endereço na aba Config)';
+
+  try {
+    const {collection,getDocs,query,where,orderBy}=window.fbLib;
+    const hoje=getHojeStr();
+    // FIX: filtro de data — motoboy só precisa de entregas de hoje
+    const snap=await getDocs(query(collection(window.db,'pedidos'),where('criadoEm','>=',hoje+'T00:00:00'),where('criadoEm','<=',hoje+'T23:59:59'),orderBy('criadoEm','asc')));
+    const pedidos=snap.docs.map(d=>({id:d.id,...d.data()}));
+    motoboyRotas=gerarRotas(pedidos);
+    if(!motoboyRotas.length){
+      tabsEl.innerHTML='';
+      alertEl.classList.remove('hidden');
+      return;
+    }
+    tabsEl.innerHTML=motoboyRotas.map((r,i)=>`
+      <button class="h-tab" onclick="motoboyVerRota(${i})">
+        ⏰ ${r.horario} <span style="font-size:12px;font-weight:400;margin-left:6px">(${r.pedidos.length} entrega${r.pedidos.length>1?'s':''})</span>
+      </button>`).join('');
+  } catch(e){
+    tabsEl.innerHTML=`<div class="empty">Erro: ${e.message}</div>`;
+  }
+}
+window.motoboyLoad=motoboyLoad;
+
+function pagamentoBadgeMotoboy(p){
+  const pg=p.pagamento||'';
+  // Usar totalPedido se disponível, senão preco unitário como fallback
+  const valorTotal=p.totalPedido||p.preco||0;
+  const valorFmt=`R$ ${Number(valorTotal).toFixed(2).replace('.',',')}`;
+  const troco=p.troco?`R$ ${Number(p.troco).toFixed(2).replace('.',',')}`:null;
+  // PIX: se pagamento é PIX (pago ou aguardando) — motoboy não cobra nada
+  if(pg==='PIX'){
+    const pago=p.status==='PIX Confirmado'||p.status==='Confirmado'||p.status==='Entregue';
+    const statusPix=pago?'✅ PIX PAGO':'⏳ PIX — AGUARDANDO CONFIRMAÇÃO';
+    const bg=pago?'#dcfce7':'#fef9c3';
+    const borda=pago?'#22c55e':'#ca8a04';
+    const cor=pago?'#15803d':'#854d0e';
+    return `<div style="margin-top:8px;padding:10px 12px;background:${bg};border:2px solid ${borda};border-radius:8px;font-weight:700;font-size:13px;color:${cor}">${statusPix} — ${valorFmt}</div>`;
+  } else if(pg==='Dinheiro'){
+    const trocoInfo=troco
+      ?`<div style="font-size:12px;font-weight:400;margin-top:3px">💱 Dar troco de ${troco} (cliente paga com R$ ${Number(p.pagarCom||0).toFixed(2).replace('.',',')})</div>`
+      :`<div style="font-size:12px;font-weight:400;margin-top:3px">Dinheiro exato — sem troco</div>`;
+    return `<div style="margin-top:8px;padding:10px 12px;background:#fff7ed;border:2px solid #f97316;border-radius:8px;font-weight:700;font-size:13px;color:#c2410c">💵 COBRAR DINHEIRO — ${valorFmt}${trocoInfo}</div>`;
+  } else if(pg==='Cartão'){
+    return `<div style="margin-top:8px;padding:10px 12px;background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;font-weight:700;font-size:13px;color:#1d4ed8">💳 COBRAR NO CARTÃO — ${valorFmt}</div>`;
+  }
+  return '';
+}
+
+// ─── ROTA OTIMIZADA (Nominatim) ───────────────────────────────
+async function geocodificarEndereco(endereco, bairro){
+  const q=encodeURIComponent(`${endereco}, ${bairro}, Salvador, Bahia, Brasil`);
+  try {
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,{headers:{'Accept-Language':'pt-BR'}});
+    const d=await r.json();
+    if(d&&d[0]) return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon)};
+  } catch(e){}
+  return null;
+}
+
+function distanciaKm(a,b){
+  const R=6371;
+  const dLat=(b.lat-a.lat)*Math.PI/180;
+  const dLon=(b.lon-a.lon)*Math.PI/180;
+  const x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+
+async function otimizarRota(pedidos, origemCfg){
+  // Geocodifica origem (restaurante)
+  let origemCoord=null;
+  try {
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(origemCfg+', Salvador, Bahia, Brasil')}&format=json&limit=1`,{headers:{'Accept-Language':'pt-BR'}});
+    const d=await r.json();
+    if(d&&d[0]) origemCoord={lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon)};
+  } catch(e){}
+
+  // Geocodifica cada entrega com delay de 1s (respeitar rate limit Nominatim)
+  // FIX 5: Usa coords já salvo no pedido — só geocodifica se não existir
+  const coords=[];
+  let precisaDelay=false;
+  for(let i=0;i<pedidos.length;i++){
+    const p=pedidos[i];
+    if(p.coords&&p.coords.lat&&p.coords.lon){
+      coords.push(p.coords); // usa coordenada cacheada do banco
+    } else {
+      if(precisaDelay) await new Promise(res=>setTimeout(res,1100));
+      const end=`${p.endereco||''}${p.numero?', '+p.numero:''}`;
+      const coord=await geocodificarEndereco(end, p.bairro||'');
+      coords.push(coord);
+      precisaDelay=true;
+    }
+  }
+
+  // Se não conseguiu geocodificar, retorna ordenado alfabeticamente por bairro (fallback)
+  if(!origemCoord) return pedidos.slice().sort((a,b)=>(a.bairro||'').localeCompare(b.bairro||''));
+
+  // Algoritmo do vizinho mais próximo (nearest neighbor)
+  const restantes=[...pedidos.map((p,i)=>({...p,_coord:coords[i],_idx:i}))];
+  const otimizado=[];
+  let atual=origemCoord;
+
+  while(restantes.length>0){
+    let melhorIdx=0;
+    let melhorDist=Infinity;
+    restantes.forEach((p,i)=>{
+      if(!p._coord){ // sem coord: coloca no final
+        if(melhorDist===Infinity){ melhorIdx=i; }
+        return;
+      }
+      const d=distanciaKm(atual,p._coord);
+      if(d<melhorDist){ melhorDist=d; melhorIdx=i; }
+    });
+    const escolhido=restantes.splice(melhorIdx,1)[0];
+    if(escolhido._coord) atual=escolhido._coord;
+    const {_coord,_idx,...pedidoLimpo}=escolhido;
+    otimizado.push(pedidoLimpo);
+  }
+  return otimizado;
+}
+
+function motoboyVerRota(idx){
+  if(idx<0||idx>=motoboyRotas.length){ return; }
+  motoboyRotaSel=motoboyRotas[idx];
+  document.getElementById('motoboy-horario-sel').classList.add('hidden');
+  document.getElementById('motoboy-rota-view').classList.remove('hidden');
+  document.getElementById('motoboy-rota-titulo').textContent='⏰ '+motoboyRotaSel.horario;
+
+  const cfg=cfgCache;
+  const origem=cfg?.endereco||'';
+
+  // Mostrar loading enquanto otimiza
+  const entregasEl=document.getElementById('motoboy-entregas');
+  entregasEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--gray-600)"><div class="load-spin" style="width:28px;height:28px;border-color:rgba(0,0,0,.15);border-top-color:var(--blue);margin:0 auto 12px"></div><div style="font-size:13px">Calculando rota otimizada...</div><div style="font-size:12px;color:var(--gray-400);margin-top:4px">(pode levar alguns segundos)</div></div>`;
+
+  otimizarRota([...motoboyRotaSel.pedidos], origem).then(pedidosOtimizados=>{
+    motoboyRotaSel.pedidos=pedidosOtimizados;
+    entregasEl.innerHTML=pedidosOtimizados.map((p,i)=>`
+      <div class="entrega-card" id="ec-${p.id}">
+        <div class="entrega-num">${i+1}</div>
+        <div class="entrega-info" style="flex:1">
+          <div class="entrega-nome">${escHtml(p.nome)}</div>
+          <div class="entrega-end">📍 ${escHtml(p.endereco)}${p.numero?', Nº '+escHtml(p.numero):''}</div>
+          <div class="entrega-end">🏘️ ${escHtml(p.bairro)}</div>
+          <div class="entrega-end">📞 <a href="tel:${escHtml(p.telefone)}" style="color:var(--blue)">${escHtml(p.telefone)}</a></div>
+          <div class="entrega-tags"><span class="tag">${escHtml(p.nomeProduto||p.produto)}${p.quantidade>1?' x'+p.quantidade:''}</span></div>
+          ${(p.adicionaisProteina?.length)?`<div style="font-size:12px;color:var(--gray-600);margin-top:4px">🥩 ${p.adicionaisProteina.map(a=>escHtml(a.nome)).join(', ')}</div>`:''}
+          ${(p.adicionaisBebida?.length)?`<div style="font-size:12px;color:var(--gray-600);margin-top:2px">🥤 ${p.adicionaisBebida.map(a=>escHtml(a.nome)).join(', ')}</div>`:''}
+          ${p.observacao?`<div style="font-size:12px;background:#fefce8;border:1px solid #fde047;border-radius:4px;padding:4px 8px;margin-top:4px;color:#854d0e">📝 ${escHtml(p.observacao)}</div>`:''}
+          ${pagamentoBadgeMotoboy(p)}
+        </div>
+        <div class="entrega-acoes">
+          ${p.status==='Entregue'
+            ?`<span class="badge badge-entregue">✅ Entregue</span>`
+            :`<button class="btn btn-success btn-sm" onclick="motoboyEntregue('${p.id}','${escHtml(p.telefone)}','${(p.nome||'').replace(/'/g,"\\'")}')">✅ Entregue</button>`
+          }
+        </div>
+      </div>`).join('');
+  });
+}
+window.motoboyVerRota=motoboyVerRota;
+
+function motoboyVoltarSel(){
+  document.getElementById('motoboy-horario-sel').classList.remove('hidden');
+  document.getElementById('motoboy-rota-view').classList.add('hidden');
+}
+window.motoboyVoltarSel=motoboyVoltarSel;
+
+function motoboyAbrirWaze(){
+  if(!motoboyRotaSel?.pedidos?.length){ alert('Nenhuma entrega selecionada.'); return; }
+  const pendentes=motoboyRotaSel.pedidos.filter(p=>p.status!=='Entregue');
+  if(!pendentes.length){ alert('Todas as entregas já foram marcadas como entregues! 🎉'); return; }
+  const p=pendentes[0];
+  const endFull=`${p.endereco||''}${p.numero?', Nº '+p.numero:''}, ${p.bairro||''}, Salvador, BA`;
+  const url=`https://waze.com/ul?q=${encodeURIComponent(endFull)}&navigate=yes`;
+  window.open(url,'_blank');
+}
+window.motoboyAbrirWaze=motoboyAbrirWaze;
+
+async function motoboyEntregue(id,telefone,nome){
+  try {
+    const {doc,updateDoc}=window.fbLib;
+    await updateDoc(doc(window.db,'pedidos',id),{status:'Entregue'});
+    const card=document.getElementById('ec-'+id);
+    if(card){
+      card.querySelector('.entrega-num').style.background='var(--green)';
+      card.querySelector('.entrega-acoes').innerHTML=`<span class="badge badge-entregue">✅ Entregue</span>`;
+      // Mostrar confirmação visual no card
+      const info=card.querySelector('.entrega-info');
+      if(info){
+        const conf=document.createElement('div');
+        conf.style.cssText='margin-top:8px;padding:8px 10px;background:#dcfce7;border-radius:6px;font-size:12px;color:#15803d;font-weight:600';
+        conf.textContent='✅ Marcado como entregue!';
+        info.appendChild(conf);
+      }
+    }
+    if(motoboyRotaSel){ const p=motoboyRotaSel.pedidos.find(x=>x.id===id); if(p) p.status='Entregue'; }
+  } catch(e){ alert('Erro: '+e.message); }
+}
+window.motoboyEntregue=motoboyEntregue;
+
+// ─── FINANCEIRO ───────────────────────────────────────────────
+const APP_SENHA_HASH='0efe22d0ed15f45addb23a72c60dd12c7ca497e75958be0ca8a68809df433fc0';
+// NOTA DE SEGURANÇA: este hash protege contra acesso casual no frontend.
+// Para produção, migrar para Firebase Authentication + Firestore Security Rules.
+
+// Rate-limit de tentativas de senha (máx 5 em 60s)
+const _senhaAttempts={count:0,lockUntil:0};
+
+async function hashSenha(s){
+  try {
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  } catch(e) {
+    console.error('hashSenha erro:', e);
+  }
+}
+async function senhaCorreta(v){
+  try {
+  const agora=Date.now();
+  if(agora < _senhaAttempts.lockUntil){
+    const seg=Math.ceil((_senhaAttempts.lockUntil-agora)/1000);
+    alert(`Muitas tentativas. Aguarde ${seg}s.`);
+    return false;
+  }
+  const ok=(await hashSenha(v))===APP_SENHA_HASH;
+  if(!ok){
+    _senhaAttempts.count++;
+    if(_senhaAttempts.count>=5){
+      _senhaAttempts.lockUntil=Date.now()+60000;
+      _senhaAttempts.count=0;
+    }
+  } else {
+    _senhaAttempts.count=0;
+  }
+  return ok;
+  } catch(e) {
+    console.error('senhaCorreta erro:', e);
+  }
+}
+let finDesbloqueado=false;
+let cfgDesbloqueado=false;
+
+function finAbrir(){
+  finDesbloqueado=false;
+  document.getElementById('fin-lock-screen').classList.remove('hidden');
+  document.getElementById('fin-content').classList.add('hidden');
+  document.getElementById('fin-senha-input').value='';
+  hideAlert('fin-senha-err');
+}
+
+async function finVerificarSenha(){
+  try {
+
+  const v=document.getElementById('fin-senha-input').value;
+  if(await senhaCorreta(v)){
+    finDesbloqueado=true;
+    document.getElementById('fin-lock-screen').classList.add('hidden');
+    document.getElementById('fin-content').classList.remove('hidden');
+    finHoje();
+  } else {
+    showAlert('fin-senha-err','Senha incorreta.','error');
+    document.getElementById('fin-senha-input').value='';
+  }
+
+  } catch(e) {
+    console.error('finVerificarSenha erro:', e);
+  }
+}
+window.finVerificarSenha=finVerificarSenha;
+
+function finBloquear(){
+  finDesbloqueado=false;
+  nav('home');
+}
+window.finBloquear=finBloquear;
+
+function finHoje(){
+  const hoje=getHojeStr();
+  document.getElementById('fin-data').value=hoje;
+  finCarregar();
+}
+window.finHoje=finHoje;
+
+async function finCarregar(){
+  const data=document.getElementById('fin-data').value;
+  if(!data) return;
+  document.getElementById('fin-loading').classList.remove('hidden');
+  document.getElementById('fin-dados').classList.add('hidden');
+
+  try {
+    const {collection,getDocs,query,where}=window.fbLib;
+    // FIX: filtro de data no Firestore — nunca carrega coleção inteira
+    const snap=await getDocs(query(collection(window.db,'pedidos'),where('criadoEm','>=',data+'T00:00:00'),where('criadoEm','<=',data+'T23:59:59')));
+    const todos=snap.docs.map(d=>d.data());
+    const cfg=await cfgGetCached();
+    const precoMarmita=parseFloat(cfg?.precoMarmita||15)||15;
+
+    function getPreco(p){
+      // FIX 7: Prioridade absoluta ao campo numérico totalPedido
+      if(p.totalPedido&&!isNaN(parseFloat(p.totalPedido))) return parseFloat(p.totalPedido);
+      if(p.preco&&p.quantidade) return parseFloat(p.preco)*(parseInt(p.quantidade)||1);
+      if(p.preco) return parseFloat(p.preco)||0;
+      // fallback apenas para pedidos muito antigos sem nenhum campo numérico
+      const nome=(p.nomeProduto||p.produto||'').toLowerCase();
+      if(nome.includes('marmita')) return precoMarmita;
+      return 0;
+    }
+
+    const entregues=todos.filter(p=>p.status==='Entregue');
+    const pgtos={Dinheiro:{qtd:0,val:0},Cartão:{qtd:0,val:0},PIX:{qtd:0,val:0}};
+    entregues.forEach(p=>{
+      const pg=p.pagamento||'';
+      const pr=getPreco(p);
+      if(pgtos[pg]){ pgtos[pg].qtd++; pgtos[pg].val+=pr; }
+    });
+
+    const ativos=todos.filter(p=>p.status!=='Cancelado');
+    let marmQtd=0,marmVal=0,pratoQtd=0,pratoVal=0;
+    ativos.forEach(p=>{
+      const nome=(p.nomeProduto||p.produto||'').toLowerCase();
+      const pr=getPreco(p);
+      if(nome.includes('marmita')){ marmQtd++; marmVal+=pr; }
+      else { pratoQtd++; pratoVal+=pr; }
+    });
+
+    const receitaTotal=pgtos.Dinheiro.val+pgtos.Cartão.val+pgtos.PIX.val;
+
+    document.getElementById('fin-total-pedidos').textContent=todos.length;
+    document.getElementById('fin-receita-total').textContent=fmtMoeda(receitaTotal);
+    document.getElementById('fin-receita-sub').textContent=`Baseado em ${entregues.length} pedido(s) entregue(s)`;
+    document.getElementById('fin-din-qtd').textContent=pgtos.Dinheiro.qtd+'x';
+    document.getElementById('fin-din-val').textContent=fmtMoeda(pgtos.Dinheiro.val);
+    document.getElementById('fin-cart-qtd').textContent=pgtos.Cartão.qtd+'x';
+    document.getElementById('fin-cart-val').textContent=fmtMoeda(pgtos.Cartão.val);
+    document.getElementById('fin-pix-qtd').textContent=pgtos.PIX.qtd+'x';
+    document.getElementById('fin-pix-val').textContent=fmtMoeda(pgtos.PIX.val);
+    document.getElementById('fin-marm-qtd').textContent=marmQtd+'x';
+    document.getElementById('fin-marm-val').textContent=fmtMoeda(marmVal);
+    document.getElementById('fin-prato-qtd').textContent=pratoQtd+'x';
+    document.getElementById('fin-prato-val').textContent=fmtMoeda(pratoVal);
+    document.getElementById('fin-s-entregues').textContent=todos.filter(p=>p.status==='Entregue').length;
+    document.getElementById('fin-s-aguardando').textContent=todos.filter(p=>p.status==='Aguardando PIX').length;
+    document.getElementById('fin-s-confirmado').textContent=todos.filter(p=>p.status==='PIX Confirmado'||p.status==='Confirmado').length;
+    document.getElementById('fin-s-cancelado').textContent=todos.filter(p=>p.status==='Cancelado').length;
+
+    document.getElementById('fin-loading').classList.add('hidden');
+    document.getElementById('fin-dados').classList.remove('hidden');
+  } catch(e){
+    document.getElementById('fin-loading').textContent='Erro: '+e.message;
+  }
+}
+window.finCarregar=finCarregar;
+
+// ─── CONFIG ───────────────────────────────────────────────────
+const DIAS=['segunda','terca','quarta','quinta','sexta','sabado','domingo'];
+const DIAS_LABEL={segunda:'Segunda',terca:'Terça',quarta:'Quarta',quinta:'Quinta',sexta:'Sexta',sabado:'Sábado',domingo:'Domingo'};
+
+function cfgAbrir(){
+  cfgDesbloqueado=false;
+  document.getElementById('cfg-lock-screen').classList.remove('hidden');
+  document.getElementById('cfg-content').classList.add('hidden');
+  document.getElementById('cfg-senha-input').value='';
+  hideAlert('cfg-senha-err');
+}
+
+async function cfgVerificarSenha(){
+  try {
+
+  const v=document.getElementById('cfg-senha-input').value;
+  if(await senhaCorreta(v)){
+    cfgDesbloqueado=true;
+    document.getElementById('cfg-lock-screen').classList.add('hidden');
+    document.getElementById('cfg-content').classList.remove('hidden');
+    cfgLoad();
+  } else {
+    showAlert('cfg-senha-err','Senha incorreta.','error');
+    document.getElementById('cfg-senha-input').value='';
+  }
+
+  } catch(e) {
+    console.error('cfgVerificarSenha erro:', e);
+  }
+}
+window.cfgVerificarSenha=cfgVerificarSenha;
+
+function cfgBloquear(){
+  cfgDesbloqueado=false;
+  nav('home');
+}
+window.cfgBloquear=cfgBloquear;
+
+function cfgRenderPratos(pratos={}){
+  const el=document.getElementById('pratos-form');
+  if(!el) return;
+  el.innerHTML=DIAS.map(d=>{
+    const opcoes=(pratos[d]?.opcoes&&pratos[d].opcoes.length)?pratos[d].opcoes:[{nome:pratos[d]?.nome||'',preco:pratos[d]?.preco||''}];
+    const opcoesHtml=opcoes.map((op,i)=>`
+      <div class="prato-opcao-row" id="opcao-row-${d}-${i}" style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+        <input type="text" placeholder="Ex: Feijoada" value="${(op.nome||'').replace(/"/g,'&quot;')}" id="prato-nome-${d}-${i}" style="padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;flex:1;min-width:0">
+        <input type="number" placeholder="0.00" value="${op.preco||''}" id="prato-preco-${d}-${i}" step="0.01" min="0" class="prato-preco-input" style="width:80px">
+        ${i>0?`<button type="button" onclick="cfgRemoverOpcao('${d}',${i})" style="background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);padding:4px 8px;cursor:pointer;font-size:13px">✕</button>`:'<span style="width:28px"></span>'}
+      </div>`).join('');
+    return `
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--gray-100)">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <div class="dia-label">${DIAS_LABEL[d]}</div>
+        <button type="button" onclick="cfgAdicionarOpcao('${d}')" style="background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;font-size:12px">+ Opção</button>
+      </div>
+      <div id="opcoes-container-${d}" style="width:100%">${opcoesHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function cfgAdicionarOpcao(dia){
+  const container=document.getElementById('opcoes-container-'+dia);
+  if(!container) return;
+  const rows=container.querySelectorAll('.prato-opcao-row');
+  const i=rows.length;
+  const div=document.createElement('div');
+  div.className='prato-opcao-row';
+  div.id=`opcao-row-${dia}-${i}`;
+  div.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:4px';
+  div.innerHTML=`
+    <input type="text" placeholder="Ex: Feijoada" id="prato-nome-${dia}-${i}" style="padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;flex:1;min-width:0">
+    <input type="number" placeholder="0.00" id="prato-preco-${dia}-${i}" step="0.01" min="0" class="prato-preco-input" style="width:80px">
+    <button type="button" onclick="cfgRemoverOpcao('${dia}',${i})" style="background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);padding:4px 8px;cursor:pointer;font-size:13px">✕</button>`;
+  container.appendChild(div);
+  div.querySelector('input[type=text]').focus();
+}
+window.cfgAdicionarOpcao=cfgAdicionarOpcao;
+
+function cfgRemoverOpcao(dia,idx){
+  const container=document.getElementById('opcoes-container-'+dia);
+  if(!container) return;
+  const rows=Array.from(container.querySelectorAll('.prato-opcao-row'));
+  if(rows.length<=1) return; // mínimo 1
+  rows[idx]?.remove();
+  // Re-indexar IDs
+  Array.from(container.querySelectorAll('.prato-opcao-row')).forEach((row,i)=>{
+    row.id=`opcao-row-${dia}-${i}`;
+    const nm=row.querySelector('input[type=text]'); if(nm) nm.id=`prato-nome-${dia}-${i}`;
+    const pr=row.querySelector('input[type=number]'); if(pr) pr.id=`prato-preco-${dia}-${i}`;
+    const btn=row.querySelector('button');
+    if(btn) btn.setAttribute('onclick',`cfgRemoverOpcao('${dia}',${i})`);
+  });
+}
+window.cfgRemoverOpcao=cfgRemoverOpcao;
+
+function cfgRenderHorarios(horarios){
+  const el=document.getElementById('horarios-list');
+  if(!el) return;
+  el.innerHTML=horarios.map((h,i)=>`
+    <div class="horario-item">
+      <input type="text" value="${h.replace(/"/g,'&quot;')}" id="hor-${i}" placeholder="Ex: 12h00 às 12h30">
+      <button class="btn btn-sm btn-danger" onclick="horarioRemover(${i})">✕</button>
+    </div>`).join('');
+}
+
+function horarioAdicionar(){
+  horariosCache.push('');
+  cfgRenderHorarios(horariosCache);
+  // Foca no novo campo
+  const inputs=document.querySelectorAll('[id^="hor-"]');
+  if(inputs.length) inputs[inputs.length-1].focus();
+}
+window.horarioAdicionar=horarioAdicionar;
+
+function horarioRemover(idx){
+  const horario=horariosCache[idx];
+  modalSenhaAbrir(`Remover o horário "${horario}"? Confirme a senha:`,'🗑️ Remover horário',()=>{
+    horariosCache.splice(idx,1);
+    cfgRenderHorarios(horariosCache);
+  });
+}
+window.horarioRemover=horarioRemover;
+
+async function cfgLoad(){
+  try {
+
+  const cfg=await cfgGetCached();
+  if(cfg){
+    document.getElementById('cfg-nome').value=cfg.nome||'Restaurante Dona Leninha';
+    document.getElementById('cfg-end').value=cfg.endereco||'';
+    document.getElementById('cfg-tel').value=cfg.telefone||'';
+    const pm=parseFloat(cfg.precoMarmita||15);
+    document.getElementById('cfg-preco-marmita').value=pm.toFixed(2);
+    const dmEl=document.getElementById('cfg-desc-marmita');
+    if(dmEl) dmEl.value=cfg.descMarmita||'';
+    cfgRenderPratos(cfg.pratos||{});
+    if(cfg.horarios&&cfg.horarios.length) horariosCache=[...cfg.horarios];
+    cfgRenderHorarios(horariosCache);
+    if(cfg.bairros&&cfg.bairros.length) bairrosCache=[...cfg.bairros];
+    cfgRenderBairros(bairrosCache);
+    if(cfg.proteinas) proteinasCache=[...cfg.proteinas];
+    if(cfg.bebidas) bebidasCache=[...cfg.bebidas];
+    cfgRenderAdicionais('proteina');
+    cfgRenderAdicionais('bebida');
+  } else {
+    cfgRenderPratos({});
+    cfgRenderHorarios(horariosCache);
+    cfgRenderBairros(bairrosCache);
+  }
+  const base=getBaseUrl();
+  const ml=document.getElementById('motoboy-link-url');
+  if(ml) ml.textContent=base+'?tela=motoboy';
+
+  } catch(e) {
+    console.error('cfgLoad erro:', e);
+  }
+}
+window.cfgLoad=cfgLoad;
+
+let _cfgCacheTs=0;
+const CFG_CACHE_TTL=5*60*1000; // 5 minutos
+
+async function cfgGetCached(){
+  if(cfgCache && (Date.now()-_cfgCacheTs)<CFG_CACHE_TTL) return cfgCache;
+  try {
+    const {doc,getDoc}=window.fbLib;
+    const snap=await getDoc(doc(window.db,'config','restaurante'));
+    if(snap.exists()){ cfgCache=snap.data(); _cfgCacheTs=Date.now(); }
+  } catch(e){}
+  return cfgCache;
+}
+
+async function cfgSalvar(){
+  hideAlert('cfg-ok'); hideAlert('cfg-err');
+
+  // Coletar horários dos inputs
+  const horariosInputs=document.querySelectorAll('[id^="hor-"]');
+  const horarios=Array.from(horariosInputs).map(i=>i.value.trim()).filter(Boolean);
+  if(!horarios.length){ showAlert('cfg-err','Adicione pelo menos um horário de entrega.'); return; }
+  horariosCache=[...horarios];
+
+  const pratos={};
+  DIAS.forEach(d=>{
+    const container=document.getElementById('opcoes-container-'+d);
+    if(!container){ return; }
+    const rows=container.querySelectorAll('.prato-opcao-row');
+    const opcoes=[];
+    rows.forEach((row,i)=>{
+      const nome=document.getElementById(`prato-nome-${d}-${i}`)?.value.trim()||'';
+      const preco=parseFloat(document.getElementById(`prato-preco-${d}-${i}`)?.value)||0;
+      if(nome) opcoes.push({nome, preco: preco>0?preco:0});
+    });
+    if(opcoes.length===1){
+      pratos[d]={nome:opcoes[0].nome, preco:opcoes[0].preco, opcoes};
+    } else if(opcoes.length>1){
+      pratos[d]={nome:opcoes[0].nome, preco:opcoes[0].preco, opcoes};
+    }
+  });
+
+  const data={
+    nome: document.getElementById('cfg-nome').value.trim()||'Restaurante Dona Leninha',
+    endereco: document.getElementById('cfg-end').value.trim(),
+    telefone: document.getElementById('cfg-tel').value.trim().replace(/\D/g,''),
+    precoMarmita: parseFloat(document.getElementById('cfg-preco-marmita').value)||15,
+    descMarmita: document.getElementById('cfg-desc-marmita')?.value.trim()||'',
+    pratos,
+    horarios,
+    bairros: bairrosCache,
+    proteinas: proteinasCache,
+    bebidas: bebidasCache,
+  };
+  if(!data.endereco){ showAlert('cfg-err','O endereço do restaurante é obrigatório.'); return; }
+  if(!data.telefone){ showAlert('cfg-err','O WhatsApp do restaurante é obrigatório.'); return; }
+  try {
+    const {doc,setDoc}=window.fbLib;
+    await setDoc(doc(window.db,'config','restaurante'),data);
+    cfgCache=data;
+    _cfgCacheTs=Date.now();
+    popularSelectHorarios();
+    popularSelectBairros();
+    showAlert('cfg-ok','Configurações salvas!','success');
+    setTimeout(()=>hideAlert('cfg-ok'),3000);
+  } catch(e){ showAlert('cfg-err','Erro: '+e.message); }
+}
+window.cfgSalvar=cfgSalvar;
+
+// ─── FORMULÁRIO DO CLIENTE ────────────────────────────────────
+let formDados={};
+let formCfg={};
+
+function formAvisoAgora(){
+  const sel=document.getElementById('f-horario');
+  const aviso=document.getElementById('f-aviso-agora');
+  if(!sel||!aviso) return;
+  aviso.style.display=(sel.value==='Agora'&&new Date().getHours()<13)?'block':'none';
+}
+window.formAvisoAgora=formAvisoAgora;
+
+async function formInit(){
+  try {
+    const {doc,getDoc}=window.fbLib;
+    const snap=await getDoc(doc(window.db,'config','restaurante'));
+    if(snap.exists()){
+      formCfg=snap.data();
+      window._formCfgGlobal=formCfg;
+      const dia=getDiaSemana();
+      const prato=formCfg.pratos?.[dia];
+      const precoMarmita=parseFloat(formCfg.precoMarmita||15)||15;
+
+      const marmPrecoEl=document.getElementById('f-marmita-preco');
+      if(marmPrecoEl) marmPrecoEl.textContent='R$ '+precoMarmita.toFixed(2).replace('.',',');
+      // Descrição da marmita
+      const marmDescEl=document.getElementById('f-marmita-desc');
+      if(marmDescEl) marmDescEl.textContent=formCfg.descMarmita||'';
+
+      const pratoEl=document.getElementById('f-prato-desc');
+      const pratoBadge=document.getElementById('f-prato-preco-badge');
+      const pratoOpcoes=prato?.opcoes&&prato.opcoes.length>1?prato.opcoes:null;
+      if(prato?.nome){
+        if(pratoOpcoes){
+          if(pratoEl) pratoEl.textContent='Veja as opções disponíveis abaixo';
+          if(pratoBadge) pratoBadge.textContent='';
+        } else {
+          if(pratoEl) pratoEl.textContent=prato.nome;
+          if(pratoBadge) pratoBadge.textContent=prato.preco>0?'R$ '+Number(prato.preco).toFixed(2).replace('.',','):'';
+        }
+      } else {
+        if(pratoEl) pratoEl.textContent='Consulte no WhatsApp';
+        if(pratoBadge) pratoBadge.textContent='';
+      }
+      formRenderPratoOpcoes(pratoOpcoes);
+
+      // Popular horários do formulário
+      if(formCfg.horarios&&formCfg.horarios.length){
+        const fSel=document.getElementById('f-horario');
+        if(fSel){
+          fSel.innerHTML='<option value="">Selecione o horário</option>';
+          // Opção "Pedir Agora" sempre visível
+          const oAgora=document.createElement('option');
+          oAgora.value='Agora';
+          oAgora.textContent='🕐 Pedir Agora — disponível a partir das 13h';
+          fSel.appendChild(oAgora);
+          formCfg.horarios.forEach(h=>{ const o=document.createElement('option'); o.value=h; o.textContent=h; fSel.appendChild(o); });
+          // Remover listener anterior antes de adicionar novo (evita duplicação)
+          fSel.removeEventListener('change', formAvisoAgora);
+          fSel.addEventListener('change', formAvisoAgora);
+        }
+      }
+      // Popular bairros do formulário
+      if(formCfg.bairros&&formCfg.bairros.length){
+        bairrosCache=[...formCfg.bairros];
+        popularSelectBairros();
+      }
+      if(formCfg.proteinas) proteinasCache=[...formCfg.proteinas];
+      if(formCfg.bebidas) bebidasCache=[...formCfg.bebidas];
+      formRenderAdicionaisForm();
+    }
+  } catch(e){ console.error(e); }
+}
+window.formInit=formInit;
+
+async function formStep1(){
+  const tel=document.getElementById('f-tel').value.trim().replace(/\D/g,'');
+  const telValido=tel.length>=10&&tel.length<=11&&/^[1-9]{2}/.test(tel);
+  if(!telValido){ document.getElementById('f-tel-err').classList.remove('hidden'); return; }
+  document.getElementById('f-tel-err').classList.add('hidden');
+  formDados.telefone=tel;
+  try {
+    const {collection,getDocs,query,where}=window.fbLib;
+    // FIX 3: Busca cliente pelo telefone direto no Firestore, sem baixar todos
+    const snap=await getDocs(query(collection(window.db,'clientes'),where('telefone','==',tel)));
+    const clienteDoc=snap.docs[0]||null;
+    if(clienteDoc){
+      const c=clienteDoc.data();
+      formDados.clienteId=clienteDoc.id;
+      document.getElementById('f-nome').value=c.nome||'';
+      if(c.bairro&&c.endereco){
+        document.getElementById('f-bairro-busca').value=c.bairro;
+        document.getElementById('f-bairro').value=c.bairro;
+        document.getElementById('f-end').value=c.endereco;
+        document.getElementById('f-end-wrap').classList.remove('hidden');
+        _bairroSelecionado=true;
+      }
+      document.getElementById('f-numero').value=c.numero||'';
+      document.getElementById('f-complemento').value=c.complemento||'';
+      if(c.aniversario) document.getElementById('f-aniversario').value=c.aniversario;
+      if(c.bairro&&c.endereco&&c.numero) endAtualizarPreview();
+      const aviso=document.getElementById('f-cliente-encontrado');
+      aviso.textContent=`👋 Olá ${(c.nome||'').split(' ')[0]}! Encontramos seu cadastro. Confirme seus dados abaixo.`;
+      aviso.classList.remove('hidden');
+    }
+  } catch(e){}
+  document.getElementById('form-step1').classList.add('hidden');
+  document.getElementById('form-step2').classList.remove('hidden');
+}
+window.formStep1=formStep1;
+
+async function formStep2(){
+  try {
+
+  const nome=document.getElementById('f-nome').value.trim();
+  const bairro=document.getElementById('f-bairro').value.trim();
+  const end=document.getElementById('f-end').value.trim();
+  const numero=document.getElementById('f-numero').value.trim();
+  const errEl=document.getElementById('f-dados-err');
+
+  if(!nome){
+    errEl.textContent='Preencha seu nome completo.';
+    errEl.classList.remove('hidden'); return;
+  }
+  if(!_bairroSelecionado||!bairro){
+    errEl.textContent='Selecione seu bairro na lista.';
+    errEl.classList.remove('hidden'); return;
+  }
+  if(!end){
+    errEl.textContent='Informe o nome da sua rua.';
+    errEl.classList.remove('hidden'); return;
+  }
+  if(!numero){
+    errEl.textContent='Informe o número da casa.';
+    errEl.classList.remove('hidden'); return;
+  }
+  errEl.classList.add('hidden');
+  formDados.nome=nome; formDados.bairro=bairro; formDados.endereco=end;
+  formDados.numero=numero; formDados.complemento=document.getElementById('f-complemento').value.trim();
+  formDados.aniversario=document.getElementById('f-aniversario').value||'';
+  document.getElementById('form-step2').classList.add('hidden');
+  document.getElementById('form-step3').classList.remove('hidden');
+  document.getElementById('f-barra-bottom').classList.remove('hidden');
+  formAtualizarTotal();
+
+  } catch(e) {
+    console.error('formStep2 erro:', e);
+  }
+}
+window.formStep2=formStep2;
+
+let _formQtd=1;
+let _formAdicionaisSel={proteinas:[],bebidas:[]}; // {idx, nome, preco}
+
+function formRenderAdicionaisForm(){
+  function renderLista(cache, containerId, boxId, tipo){
+    const box=document.getElementById(boxId);
+    const el=document.getElementById(containerId);
+    if(!box||!el) return;
+    if(!cache.length){ box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    el.innerHTML=cache.map((a,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);background:#fff" id="f-adic-${tipo}-${i}">
+        <span style="flex:1;font-size:13px">${a.nome}</span>
+        <span style="font-size:12px;color:var(--gray-500);min-width:60px;text-align:right">${a.preco>0?'+ R$ '+Number(a.preco).toFixed(2).replace('.',','):'Grátis'}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button type="button" onclick="formAdicChange('${tipo}',${i},-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-200);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gray-600)">−</button>
+          <span id="f-adic-qty-${tipo}-${i}" style="font-size:14px;font-weight:700;min-width:16px;text-align:center">0</span>
+          <button type="button" onclick="formAdicChange('${tipo}',${i},1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--blue);background:var(--blue);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff">+</button>
+        </div>
+      </div>`).join('');
+  }
+  renderLista(proteinasCache,'f-proteinas-list','f-proteinas-box','prot');
+  renderLista(bebidasCache,'f-bebidas-list','f-bebidas-box','beb');
+  _formAdicionaisSel={proteinas:[],bebidas:[]};
+}
+window.formRenderAdicionaisForm=formRenderAdicionaisForm;
+
+function formAdicChange(tipo,idx,delta){
+  const cache=tipo==='prot'?proteinasCache:bebidasCache;
+  const sel=tipo==='prot'?_formAdicionaisSel.proteinas:_formAdicionaisSel.bebidas;
+  const qtyEl=document.getElementById(`f-adic-qty-${tipo}-${idx}`);
+  const row=document.getElementById(`f-adic-${tipo}-${idx}`);
+  const existing=sel.find(x=>x.idx===idx);
+  const curQty=existing?existing.qty:0;
+  const newQty=Math.max(0,curQty+delta);
+  if(existing){ existing.qty=newQty; if(newQty===0) sel.splice(sel.indexOf(existing),1); }
+  else if(newQty>0){ sel.push({idx,qty:newQty,nome:cache[idx].nome,preco:cache[idx].preco}); }
+  if(qtyEl) qtyEl.textContent=newQty;
+  if(row) row.style.borderColor=newQty>0?'var(--blue)':'var(--gray-200)';
+  formAtualizarTotal();
+}
+window.formAdicChange=formAdicChange;
+
+function formGetTotalAdicionais(){
+  const soma=arr=>arr.reduce((s,a)=>s+((a.preco||0)*(a.qty||1)),0);
+  return soma(_formAdicionaisSel.proteinas)+soma(_formAdicionaisSel.bebidas);
+}
+
+function formRenderPratoOpcoes(opcoes){
+  const wrap=document.getElementById('f-prato-opcao-wrap');
+  const sel=document.getElementById('f-prato-opcao');
+  const badge=document.getElementById('f-prato-preco-badge');
+  if(!wrap||!sel) return;
+  if(!opcoes||!opcoes.length){
+    wrap.classList.add('hidden');
+    return;
+  }
+  sel.innerHTML='';
+  opcoes.forEach((op,i)=>{
+    const opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent=op.nome+(op.preco>0?' — R$ '+Number(op.preco).toFixed(2).replace('.',','):'');
+    sel.appendChild(opt);
+  });
+  // Mostrar badge do preço da primeira opção
+  if(badge&&opcoes[0]?.preco>0) badge.textContent='R$ '+Number(opcoes[0].preco).toFixed(2).replace('.',',');
+  wrap.classList.remove('hidden');
+}
+
+function formGetPratoOpcaoSelecionada(){
+  const cfg=window._formCfgGlobal;
+  if(!cfg) return null;
+  const dia=getDiaSemana();
+  const prato=cfg.pratos?.[dia];
+  if(!prato?.opcoes||prato.opcoes.length<=1) return prato||null;
+  const sel=document.getElementById('f-prato-opcao');
+  const idx=sel?parseInt(sel.value)||0:0;
+  return prato.opcoes[idx]||prato.opcoes[0];
+}
+
+function formGetPrecoUnitario(){
+  const produtoSel=document.querySelector('input[name="f-produto"]:checked')?.value;
+  if(produtoSel==='marmita'){
+    return parseFloat((document.getElementById('f-marmita-preco')?.textContent||'0').replace('R$ ','').replace(',','.'))||0;
+  } else if(produtoSel==='prato'){
+    const opcaoSel=formGetPratoOpcaoSelecionada();
+    if(opcaoSel?.preco>0) return opcaoSel.preco;
+    const pratoDesc=document.getElementById('f-prato-desc')?.textContent||'';
+    const m=pratoDesc.match(/R\$\s*([\d,]+)/);
+    return m?parseFloat(m[1].replace(',','.'))||0:0;
+  }
+  return 0;
+}
+
+function formAtualizarTotal(){
+  // Atualizar badge de preço ao trocar opção do prato
+  const sel=document.getElementById('f-prato-opcao');
+  const badge=document.getElementById('f-prato-preco-badge');
+  if(sel&&badge){
+    const cfg=window._formCfgGlobal;
+    if(cfg){
+      const dia=getDiaSemana();
+      const prato=cfg.pratos?.[dia];
+      if(prato?.opcoes&&prato.opcoes.length>1){
+        const op=prato.opcoes[parseInt(sel.value)||0];
+        if(op?.preco>0) badge.textContent='R$ '+Number(op.preco).toFixed(2).replace('.',',');
+      }
+    }
+  }
+  const preco=formGetPrecoUnitario();
+  const totalAdicionais=formGetTotalAdicionais();
+  const total=preco*_formQtd+totalAdicionais;
+  const fmtTotal=`R$ ${total.toFixed(2).replace('.',',')}`;
+  const valEl=document.getElementById('f-total-val');
+  if(valEl) valEl.textContent=fmtTotal;
+  if(_trocoAtivo) formCalcTroco();
+}
+
+function formQtdChange(delta){
+  _formQtd=Math.max(1,Math.min(20,_formQtd+delta));
+  document.getElementById('f-qtd-val').textContent=_formQtd;
+  formAtualizarTotal();
+}
+window.formQtdChange=formQtdChange;
+
+function formSelecionarProduto(radio){
+  document.querySelectorAll('[id^="opt-"]').forEach(el=>{
+    el.style.borderColor='var(--gray-200)';
+    el.style.background='var(--white)';
+  });
+  const label=radio.closest('label');
+  if(label){
+    label.style.borderColor='var(--blue)';
+  }
+  // Re-renderizar opções do prato ao trocar produto
+  if(radio.value==='prato'){
+    const cfg=window._formCfgGlobal;
+    const dia=getDiaSemana();
+    const prato=cfg?.pratos?.[dia];
+    const pratoOpcoes=prato?.opcoes&&prato.opcoes.length>1?prato.opcoes:null;
+    if(typeof formRenderPratoOpcoes==='function') formRenderPratoOpcoes(pratoOpcoes);
+  } else {
+    if(typeof formRenderPratoOpcoes==='function') formRenderPratoOpcoes(null);
+  }
+  formAtualizarTotal();
+}
+window.formSelecionarProduto=formSelecionarProduto;
+
+// ─── BAIRRO AUTOCOMPLETE (lista da Config) ───────────────────
+let _bairroSelecionado=false;
+
+function bairroInput(input){
+  const q=(input.value||'').toLowerCase().trim();
+  const dd=document.getElementById('f-bairro-dropdown');
+  document.getElementById('f-bairro').value='';
+  document.getElementById('f-bairro-fora').classList.add('hidden');
+  document.getElementById('f-end-wrap').classList.add('hidden');
+  _bairroSelecionado=false;
+
+  const filtrados=bairrosCache.filter(b=>b.toLowerCase().includes(q));
+
+  if(!q||!filtrados.length){
+    // Se digitou algo e não achou em nenhum bairro
+    if(q.length>=3&&!filtrados.length){
+      const telLoja=(formCfg?.telefone||'').replace(/\D/g,'');
+      const msgWa=encodeURIComponent(`Olá! Quero fazer um pedido mas meu bairro não aparece na lista. Bairro: ${input.value}. Vocês entregam aqui?`);
+      const waUrl=telLoja?`https://wa.me/55${telLoja}?text=${msgWa}`:'https://wa.me/';
+      document.getElementById('f-bairro-fora-wa').href=waUrl;
+      document.getElementById('f-bairro-fora').classList.remove('hidden');
+    }
+    dd.style.display='none';
+    return;
+  }
+
+  dd.innerHTML=filtrados.map(b=>`
+    <div onclick="bairroSelecionar('${b.replace(/'/g,"\\'")}')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--gray-100);font-size:14px;font-weight:500"
+      onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''">
+      ${b}
+    </div>`).join('');
+  dd.style.display='block';
+}
+window.bairroInput=bairroInput;
+
+function bairroSelecionar(bairro){
+  document.getElementById('f-bairro-busca').value=bairro;
+  document.getElementById('f-bairro').value=bairro;
+  document.getElementById('f-bairro-dropdown').style.display='none';
+  document.getElementById('f-bairro-fora').classList.add('hidden');
+  document.getElementById('f-end-wrap').classList.remove('hidden');
+  _bairroSelecionado=true;
+  document.getElementById('f-end').focus();
+}
+window.bairroSelecionar=bairroSelecionar;
+
+// Atualiza preview do endereço completo conforme digita
+function endAtualizarPreview(){
+  const rua=(document.getElementById('f-end')?.value||'').trim();
+  const num=(document.getElementById('f-numero')?.value||'').trim();
+  const bairro=(document.getElementById('f-bairro')?.value||'').trim();
+  const prev=document.getElementById('f-end-preview');
+  const prevTxt=document.getElementById('f-end-preview-txt');
+  if(rua&&num&&bairro){
+    prevTxt.textContent=`${rua}, Nº ${num} — ${bairro}`;
+    prev.classList.remove('hidden');
+  } else {
+    prev.classList.add('hidden');
+  }
+}
+
+// Fechar dropdown bairro ao clicar fora
+document.addEventListener('click',e=>{
+  const wrap=document.getElementById('f-bairro-busca')?.closest('.field');
+  if(wrap&&!wrap.contains(e.target)){
+    document.getElementById('f-bairro-dropdown').style.display='none';
+  }
+});
+
+// Adicionar listener de preview nos campos de rua/número
+document.addEventListener('input',e=>{
+  if(e.target.id==='f-end'||e.target.id==='f-numero') endAtualizarPreview();
+});
+
+
+
+let _trocoAtivo=false;
+
+function formTrocoSel(sim){
+  _trocoAtivo=sim;
+  document.getElementById('f-troco-nao').style.background=sim?'':'var(--green)';
+  document.getElementById('f-troco-nao').style.color=sim?'':'#fff';
+  document.getElementById('f-troco-sim').style.background=sim?'var(--orange)':'';
+  document.getElementById('f-troco-sim').style.color=sim?'#fff':'';
+  document.getElementById('f-troco-campo').classList.toggle('hidden',!sim);
+  if(!sim) document.getElementById('f-troco-result').textContent='';
+  if(sim) { formCalcTroco(); document.getElementById('f-pagar-com').focus(); }
+}
+window.formTrocoSel=formTrocoSel;
+
+function formCalcTroco(){
+  const precoUnitario=formGetPrecoUnitario();
+  const precoTotal=precoUnitario*_formQtd+formGetTotalAdicionais();
+  const pagarCom=parseFloat(document.getElementById('f-pagar-com').value)||0;
+  const resultEl=document.getElementById('f-troco-result');
+  if(!pagarCom||!precoTotal){ resultEl.textContent=''; return; }
+  if(pagarCom<precoTotal){ resultEl.textContent='⚠️ Valor menor que o total do pedido!'; resultEl.style.color='var(--red)'; return; }
+  const troco=pagarCom-precoTotal;
+  resultEl.textContent=`Troco: R$ ${troco.toFixed(2).replace('.',',')}`;
+  resultEl.style.color='var(--green)';
+}
+window.formCalcTroco=formCalcTroco;
+
+function formMostrarPix(){
+  const val=document.getElementById('f-pagamento').value;
+  document.getElementById('f-pix-info').classList.toggle('hidden',val!=='PIX');
+  document.getElementById('f-troco-box').classList.toggle('hidden',val!=='Dinheiro');
+  _trocoAtivo=false;
+  // Reset troco buttons
+  document.getElementById('f-troco-nao').style.background='';
+  document.getElementById('f-troco-nao').style.color='';
+  document.getElementById('f-troco-sim').style.background='';
+  document.getElementById('f-troco-sim').style.color='';
+  document.getElementById('f-troco-campo').classList.add('hidden');
+  document.getElementById('f-troco-result').textContent='';
+}
+window.formMostrarPix=formMostrarPix;
+
+async function formEnviar(){
+  if(window._formEnviando) return;
+  window._formEnviando=true;
+  try {
+
+  const horario=document.getElementById('f-horario').value;
+  const produtoSel=document.querySelector('input[name="f-produto"]:checked')?.value;
+  const pagamento=document.getElementById('f-pagamento').value;
+  const errEl=document.getElementById('f-pedido-err');
+
+  if(!horario||!produtoSel||!pagamento){
+    errEl.textContent='Preencha todos os campos do pedido.';
+    errEl.classList.remove('hidden'); return;
+  }
+  // Bloquear "Pedir Agora" antes das 13h
+  if(horario==='Agora' && new Date().getHours()<13){
+    errEl.textContent='O horário "Agora" só fica disponível depois das 13h.';
+    errEl.classList.remove('hidden'); return;
+  }
+  // Validar troco: pagarCom não pode ser menor que o total
+  if(pagamento==='Dinheiro'&&_trocoAtivo){
+    const pagarComVal=parseFloat(document.getElementById('f-pagar-com')?.value)||0;
+    const precoCheckUnit=formGetPrecoUnitario();
+    const totalCheck=precoCheckUnit*(_formQtd||1)+formGetTotalAdicionais();
+    if(pagarComVal>0&&pagarComVal<totalCheck){
+      errEl.textContent='O valor informado para pagamento é menor que o total do pedido.';
+      errEl.classList.remove('hidden'); return;
+    }
+  }
+  errEl.classList.add('hidden');
+
+  const btn=document.getElementById('f-btn-enviar');
+  btn.innerHTML='<span class="spin"></span> Enviando...'; btn.disabled=true;
+
+  try {
+    const {collection,addDoc,doc,setDoc}=window.fbLib;
+    const isClienteNovo=!formDados.clienteId;
+    const status=pagamento==='PIX'?'Aguardando PIX':'Confirmado';
+
+    const precoMarmita=parseFloat(formCfg?.precoMarmita||15)||15;
+    const dia=getDiaSemana();
+    const prato=formCfg?.pratos?.[dia];
+    let nomeProduto,precoUnit;
+    if(produtoSel==='marmita'){
+      nomeProduto='Marmita Completa';
+      precoUnit=precoMarmita;
+    } else {
+      const opcaoSel=formGetPratoOpcaoSelecionada();
+      const opcaoNome=opcaoSel?.nome||prato?.nome||'';
+      const opcaoPreco=opcaoSel?.preco>0?opcaoSel.preco:(prato?.preco>0?Number(prato.preco):0);
+      const precoStr=opcaoPreco>0?(' — R$ '+Number(opcaoPreco).toFixed(2).replace('.',',')):'';
+      nomeProduto=opcaoNome?('Prato do Dia — '+opcaoNome+precoStr):'Prato do Dia';
+      precoUnit=opcaoPreco;
+    }
+    const quantidade=_formQtd||1;
+    const preco=precoUnit; // preço unitário
+    const totalAdicionais=formGetTotalAdicionais();
+    const totalPedido=precoUnit*quantidade+totalAdicionais;
+    const observacao=document.getElementById('f-obs')?.value.trim()||'';
+    const adicionaisProteina=[..._formAdicionaisSel.proteinas];
+    const adicionaisBebida=[..._formAdicionaisSel.bebidas];
+
+    // Calcular troco sobre o total (com adicionais)
+    let trocoInfo={};
+    if(pagamento==='Dinheiro'&&_trocoAtivo){
+      const pagarCom=parseFloat(document.getElementById('f-pagar-com')?.value)||0;
+      if(pagarCom>0){
+        trocoInfo={pagarCom, troco: Math.max(0,pagarCom-totalPedido)};
+      }
+    }
+
+    const pedido={
+      nome: formDados.nome,
+      telefone: formDados.telefone,
+      bairro: formDados.bairro,
+      endereco: formDados.endereco,
+      numero: formDados.numero,
+      complemento: formDados.complemento||'',
+      horario,
+      produto: produtoSel,
+      nomeProduto,
+      preco: precoUnit,
+      quantidade,
+      adicionaisProteina,
+      adicionaisBebida,
+      observacao,
+      totalPedido,
+      pagamento,
+      ...trocoInfo,
+      status,
+      clienteNovo: isClienteNovo,
+      criadoEm: new Date().toISOString(),
+    };
+
+    await addDoc(collection(window.db,'pedidos'),pedido);
+
+    // Salvar/atualizar cliente
+    const clienteData={
+      nome:formDados.nome, telefone:formDados.telefone,
+      bairro:formDados.bairro, endereco:formDados.endereco,
+      numero:formDados.numero, complemento:formDados.complemento||'',
+      ultimoPedido: new Date().toISOString(),
+    };
+    if(formDados.aniversario) clienteData.aniversario=formDados.aniversario;
+    if(formDados.clienteId){
+      await setDoc(doc(window.db,'clientes',formDados.clienteId),clienteData,{merge:true});
+    } else {
+      await addDoc(collection(window.db,'clientes'),clienteData);
+    }
+
+    // Montar resumo do pedido
+    const resumoEl=document.getElementById('f-resumo');
+    if(resumoEl){
+      const trocoLine=trocoInfo.troco!=null
+        ?`<div><strong>Troco:</strong> R$ ${Number(trocoInfo.troco).toFixed(2).replace('.',',')} (pagando com R$ ${Number(trocoInfo.pagarCom).toFixed(2).replace('.',',')})</div>`
+        :(pagamento==='Dinheiro'?'<div><strong>Troco:</strong> Sem troco (dinheiro exato)</div>':'');
+      const protLine=adicionaisProteina.length?`<div><strong>Proteínas:</strong> ${adicionaisProteina.map(a=>(a.qty>1?a.qty+'x ':'')+a.nome+(a.preco>0?' (+R$ '+Number(a.preco*a.qty).toFixed(2).replace('.',',')+')':'')).join(', ')}</div>`:'';
+      const bebLine=adicionaisBebida.length?`<div><strong>Bebidas:</strong> ${adicionaisBebida.map(a=>(a.qty>1?a.qty+'x ':'')+a.nome+(a.preco>0?' (+R$ '+Number(a.preco*a.qty).toFixed(2).replace('.',',')+')':'')).join(', ')}</div>`:'';
+      const obsLine=observacao?`<div><strong>Obs:</strong> ${observacao}</div>`:'';
+      resumoEl.innerHTML=`
+        <div><strong>Nome:</strong> ${formDados.nome}</div>
+        <div><strong>Produto:</strong> ${nomeProduto}</div>
+        <div><strong>Quantidade:</strong> ${quantidade}x</div>
+        ${protLine}${bebLine}${obsLine}
+        <div><strong>Horário:</strong> ${horario}</div>
+        <div><strong>Endereço:</strong> ${formDados.endereco}, Nº ${formDados.numero}${formDados.complemento?', '+formDados.complemento:''} — ${formDados.bairro}</div>
+        <div><strong>Pagamento:</strong> ${pagamento}</div>
+        ${totalPedido>0?`<div style="font-size:15px;font-weight:700;color:var(--blue);margin-top:4px;padding-top:6px;border-top:1px solid var(--gray-200)">Total: R$ ${Number(totalPedido).toFixed(2).replace('.',',')}</div>`:''}
+        ${trocoLine}
+      `;
+    }
+
+    document.getElementById('form-step3').classList.add('hidden');
+    document.getElementById('f-barra-bottom').classList.add('hidden');
+    document.getElementById('form-sucesso').classList.remove('hidden');
+
+    // Montar linhas comuns (usadas tanto no PIX quanto em Dinheiro/Cartão)
+    const _adicionaisLinha=(adicionaisProteina?.length?'\n➕ Proteínas: '+adicionaisProteina.map(a=>(a.qty>1?a.qty+'x ':'')+a.nome).join(', '):'')+
+                            (adicionaisBebida?.length?'\n🥤 Bebidas: '+adicionaisBebida.map(a=>(a.qty>1?a.qty+'x ':'')+a.nome).join(', '):'');
+    const _obsLinha=observacao?'\n📝 Obs: '+observacao:'';
+    const _endLinha=formDados.endereco?(formDados.endereco+(formDados.numero?', Nº '+formDados.numero:'')+(formDados.complemento?', '+formDados.complemento:'')):'—';
+
+    if(pagamento==='PIX'){
+      document.getElementById('f-msg-sucesso').textContent='Seu pedido foi registrado! Você será direcionado ao nosso WhatsApp em instantes para confirmar o pagamento via PIX.';
+      const pixDiv=document.getElementById('f-pix-redirect');
+      pixDiv.classList.remove('hidden');
+
+      const telLoja=(formCfg?.telefone||'').replace(/\D/g,'');
+      const msgWpp=encodeURIComponent(
+        '🍱 *Novo Pedido — Dona Leninha*\n\n'+
+        '👤 *Cliente:* '+formDados.nome+'\n'+
+        '📞 *Telefone:* '+formDados.telefone+'\n\n'+
+        '🥘 *Pedido:* '+nomeProduto+(quantidade>1?' x'+quantidade:'')+'\n'+
+        '🕐 *Horário:* '+horario+'\n'+
+        '💰 *Total:* R$ '+Number(totalPedido).toFixed(2).replace('.',',')+
+        _adicionaisLinha+_obsLinha+'\n\n'+
+        '💳 *Pagamento:* PIX\n\n'+
+        '📍 *Endereço:*\n'+_endLinha+'\n'+
+        'Bairro: '+(formDados.bairro||'—')+'\n\n'+
+        'Aguardo a confirmação do PIX! ✅'
+      );
+      const waUrl=telLoja?'https://wa.me/55'+telLoja+'?text='+msgWpp:'https://wa.me/';
+
+      document.getElementById('f-wa-link').href=waUrl;
+
+      let cont=5;
+      const countEl=document.getElementById('f-countdown');
+      if(countEl) countEl.textContent=cont;
+      if(window._pixCountdownTimer) clearInterval(window._pixCountdownTimer);
+      window._pixCountdownTimer=setInterval(()=>{
+        cont--;
+        if(countEl) countEl.textContent=cont;
+        if(cont<=0){
+          clearInterval(window._pixCountdownTimer);
+          window._pixCountdownTimer=null;
+          // Redireciona automaticamente — window.location.href não é bloqueado
+          window.location.href=waUrl;
+        }
+      },1000);
+    } else {
+      // Dinheiro / Cartão — também redireciona para WhatsApp após 8s
+      const _pgtoLinha=pagamento==='Dinheiro'&&trocoInfo.pagarCom>0
+        ?'💳 *Pagamento:* Dinheiro\n💵 *Paga com:* R$ '+Number(trocoInfo.pagarCom).toFixed(2).replace('.',',')+'\n🔄 *Troco:* R$ '+Number(trocoInfo.troco).toFixed(2).replace('.',',')
+        :'💳 *Pagamento:* '+pagamento;
+      const msgWppOther=encodeURIComponent(
+        '🍱 *Novo Pedido — Dona Leninha*\n\n'+
+        '👤 *Cliente:* '+formDados.nome+'\n'+
+        '📞 *Telefone:* '+formDados.telefone+'\n\n'+
+        '🥘 *Pedido:* '+nomeProduto+(quantidade>1?' x'+quantidade:'')+'\n'+
+        '🕐 *Horário:* '+horario+'\n'+
+        '💰 *Total:* R$ '+Number(totalPedido).toFixed(2).replace('.',',')+
+        _adicionaisLinha+_obsLinha+'\n\n'+
+        _pgtoLinha+'\n\n'+
+        '📍 *Endereço:*\n'+_endLinha+'\n'+
+        'Bairro: '+(formDados.bairro||'—')+'\n\n'+
+        'Aguardo a confirmação! ✅'
+      );
+      const telLojaOther=(formCfg?.telefone||'').replace(/\D/g,'');
+      const waUrlOther=telLojaOther?'https://wa.me/55'+telLojaOther+'?text='+msgWppOther:'https://wa.me/';
+      document.getElementById('f-msg-sucesso').textContent=`Pedido registrado! Você será direcionado ao nosso WhatsApp em 8 segundos.`;
+      const pixDiv2=document.getElementById('f-pix-redirect');
+      pixDiv2.classList.remove('hidden');
+      document.getElementById('f-wa-link').href=waUrlOther;
+      let cont2=5;
+      const countEl2=document.getElementById('f-countdown');
+      if(countEl2) countEl2.textContent=cont2;
+      if(window._pixCountdownTimer) clearInterval(window._pixCountdownTimer);
+      window._pixCountdownTimer=setInterval(()=>{
+        cont2--;
+        if(countEl2) countEl2.textContent=cont2;
+        if(cont2<=0){
+          clearInterval(window._pixCountdownTimer);
+          window._pixCountdownTimer=null;
+          window.location.href=waUrlOther;
+        }
+      },1000);
+    }
+
+  } catch(e){
+    errEl.textContent='Erro ao enviar: '+e.message;
+    errEl.classList.remove('hidden');
+    btn.innerHTML='Enviar Pedido'; btn.disabled=false;
+  }
+
+  } catch(e) {
+    const errEl=document.getElementById('f-pedido-err');
+    if(errEl){ errEl.textContent='Erro ao enviar pedido. Tente novamente.'; errEl.classList.remove('hidden'); }
+    const btnR=document.getElementById('f-btn-enviar');
+    if(btnR){ btnR.innerHTML='Enviar Pedido'; btnR.disabled=false; }
+    console.error('formEnviar erro:', e);
+  } finally {
+    window._formEnviando=false;
+  }
+}
+window.formEnviar=formEnviar;
+
+function formNovoPedido(){
+  if(window._pixCountdownTimer){ clearInterval(window._pixCountdownTimer); window._pixCountdownTimer=null; }
+  window._formEnviando=false;
+  formDados={};
+  _formQtd=1;
+  _formAdicionaisSel={proteinas:[],bebidas:[]};
+  _trocoAtivo=false;
+  document.getElementById('form-sucesso').classList.add('hidden');
+  document.getElementById('form-step1').classList.remove('hidden');
+  document.getElementById('form-step2').classList.add('hidden');
+  document.getElementById('form-step3').classList.add('hidden');
+  document.getElementById('f-barra-bottom').classList.add('hidden');
+  document.getElementById('f-pix-redirect').classList.add('hidden');
+  document.getElementById('f-tel').value='';
+  document.getElementById('f-nome').value='';
+  document.getElementById('f-aniversario').value='';
+  document.getElementById('f-bairro-busca').value='';
+  document.getElementById('f-bairro').value='';
+  document.getElementById('f-bairro-dropdown').style.display='none';
+  document.getElementById('f-bairro-fora').classList.add('hidden');
+  document.getElementById('f-end-wrap').classList.add('hidden');
+  document.getElementById('f-end-preview').classList.add('hidden');
+  document.getElementById('f-end').value='';
+  document.getElementById('f-numero').value='';
+  _bairroSelecionado=false;
+  document.getElementById('f-complemento').value='';
+  document.getElementById('f-cliente-encontrado').classList.add('hidden');
+  document.getElementById('f-horario').value='';
+  document.getElementById('f-pagamento').value='';
+  document.getElementById('f-obs').value='';
+  document.getElementById('f-qtd-val').textContent='1';
+  document.getElementById('f-total-val').textContent='R$ 0,00';
+  document.getElementById('f-pix-info').classList.add('hidden');
+  document.getElementById('f-troco-box').classList.add('hidden');
+  document.getElementById('f-troco-campo').classList.add('hidden');
+  document.getElementById('f-troco-result').textContent='';
+  document.querySelectorAll('input[name="f-produto"]').forEach(r=>r.checked=false);
+  document.querySelectorAll('[id^="opt-"]').forEach(el=>el.style.borderColor='var(--gray-200)');
+  // Limpar mensagens de erro
+  ['f-tel-err','f-dados-err','f-pedido-err'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
+  // Resetar botão enviar
+  const _btnEnv=document.getElementById('f-btn-enviar');
+  if(_btnEnv){ _btnEnv.innerHTML='Enviar Pedido'; _btnEnv.disabled=false; }
+  // Resetar adicionais visualmente
+  formRenderAdicionaisForm();
+}
+window.formNovoPedido=formNovoPedido;
+
+// ─── MODAL CONFIG (bairro / adicionais) ──────────────────────
+let _cfgModalCallback=null;
+
+function cfgModalAbrir(titulo, bodyHtml, callback){
+  _cfgModalCallback=callback;
+  document.getElementById('cfg-modal-titulo').textContent=titulo;
+  document.getElementById('cfg-modal-body').innerHTML=bodyHtml;
+  document.getElementById('cfg-modal-err').style.display='none';
+  document.getElementById('cfg-modal-confirm').onclick=()=>{
+    const nomeEl=document.getElementById('cfg-modal-nome');
+    if(nomeEl&&!nomeEl.value.trim()){
+      document.getElementById('cfg-modal-err').style.display='block'; return;
+    }
+    if(_cfgModalCallback) _cfgModalCallback();
+  };
+  document.getElementById('cfg-modal-bg').style.display='flex';
+}
+
+window.cfgModalAbrir=cfgModalAbrir;
+function cfgModalFechar(){
+  document.getElementById('cfg-modal-bg').style.display='none';
+  _cfgModalCallback=null;
+}
+window.cfgModalFechar=cfgModalFechar;
+
+// ─── INIT ─────────────────────────────────────────────────────
+// ─── MODAL SENHA GENÉRICO ─────────────────────────────────────
+let _modalSenhaCallback=null;
+
+function modalSenhaAbrir(msg, titulo, callback){
+  _modalSenhaCallback=callback;
+  document.getElementById('modal-senha-head').textContent=titulo||'⚠️ Confirmar ação';
+  document.getElementById('modal-senha-msg').textContent=msg;
+  document.getElementById('modal-senha-input').value='';
+  document.getElementById('modal-senha-err').classList.add('hidden');
+  const bg=document.getElementById('modal-senha-bg');
+  bg.style.display='flex';
+  setTimeout(()=>document.getElementById('modal-senha-input').focus(),100);
+}
+
+function modalSenhaCancelar(){
+  document.getElementById('modal-senha-bg').style.display='none';
+  _modalSenhaCallback=null;
+}
+window.modalSenhaCancelar=modalSenhaCancelar;
+
+async function modalSenhaConfirmar(){
+  try {
+
+  const v=document.getElementById('modal-senha-input').value;
+  if(!await senhaCorreta(v)){
+    document.getElementById('modal-senha-err').classList.remove('hidden');
+    document.getElementById('modal-senha-input').value='';
+    document.getElementById('modal-senha-input').focus();
+    return;
+  }
+  document.getElementById('modal-senha-bg').style.display='none';
+  if(_modalSenhaCallback) _modalSenhaCallback();
+  _modalSenhaCallback=null;
+
+  } catch(e) {
+    console.error('modalSenhaConfirmar erro:', e);
+  }
+}
+window.modalSenhaConfirmar=modalSenhaConfirmar;
+
+// ─── BAIRROS ──────────────────────────────────────────────────
+let bairrosCache=['Calçada','Ribeira','Caminho de Areia','Boa Viagem','Dendezeiros','Uruguai','Massaranduba','Bonfim','Vila Ruy Barbosa','Jardim Cruzeiro','Pedra Furada'];
+
+// Adicionais: [{nome, preco}]
+let proteinasCache=[];
+let bebidasCache=[];
+
+function cfgRenderAdicionais(tipo){
+  const cache=tipo==='proteina'?proteinasCache:bebidasCache;
+  const el=document.getElementById(tipo==='proteina'?'proteinas-list':'bebidas-list');
+  if(!el) return;
+  el.innerHTML=cache.map((a,i)=>`
+    <div class="bairro-item">
+      <span style="flex:1">${a.nome}</span>
+      <span style="min-width:70px;text-align:right;font-size:13px;color:var(--gray-600);padding:0 8px">${a.preco>0?'R$ '+Number(a.preco).toFixed(2).replace('.',','):'Grátis'}</span>
+      <button class="btn btn-sm btn-danger" onclick="adicionalRemover('${tipo}',${i})">✕</button>
+    </div>`).join('') || '<div style="font-size:12px;color:var(--gray-400);padding:6px 0">Nenhum cadastrado.</div>';
+}
+
+function adicionalAdicionar(tipo){
+  const label=tipo==='proteina'?'proteína':'bebida';
+  cfgModalAbrir(
+    'Adicionar '+label,
+    '<div class="field"><label>Nome</label><input type="text" id="cfg-modal-nome" placeholder="Ex: Ovo frito" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:\'DM Sans\',sans-serif;font-size:14px"></div>'+
+    '<div class="field"><label>Preço (R$) — deixe 0 se for grátis</label><input type="number" id="cfg-modal-preco" value="0" step="0.01" min="0" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:\'DM Sans\',sans-serif;font-size:14px"></div>',
+    ()=>{
+      const nome=document.getElementById('cfg-modal-nome').value.trim();
+      if(!nome) return;
+      const preco=parseFloat(document.getElementById('cfg-modal-preco').value)||0;
+      if(tipo==='proteina') proteinasCache.push({nome,preco});
+      else bebidasCache.push({nome,preco});
+      cfgRenderAdicionais(tipo);
+      cfgModalFechar();
+    }
+  );
+  setTimeout(()=>document.getElementById('cfg-modal-nome')?.focus(),100);
+}
+window.adicionalAdicionar=adicionalAdicionar;
+
+function adicionalRemover(tipo,idx){
+  const cache=tipo==='proteina'?proteinasCache:bebidasCache;
+  const item=cache[idx];
+  modalSenhaAbrir(`Remover "${item.nome}"? Confirme a senha:`,'🗑️ Remover',()=>{
+    cache.splice(idx,1);
+    cfgRenderAdicionais(tipo);
+  });
+}
+window.adicionalRemover=adicionalRemover;
+
+function cfgRenderBairros(bairros){
+  const el=document.getElementById('bairros-list');
+  if(!el) return;
+  el.innerHTML=bairros.map((b,i)=>`
+    <div class="bairro-item">
+      <span>${b}</span>
+      <button class="btn btn-sm btn-danger" onclick="bairroRemover(${i})">✕</button>
+    </div>`).join('');
+}
+
+function bairroAdicionar(){
+  cfgModalAbrir(
+    'Adicionar bairro',
+    '<div class="field"><label>Nome do bairro</label><input type="text" id="cfg-modal-nome" placeholder="Ex: Calçada" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:\'DM Sans\',sans-serif;font-size:14px"></div>',
+    ()=>{
+      const nome=document.getElementById('cfg-modal-nome').value.trim();
+      if(!nome) return;
+      bairrosCache.push(nome);
+      cfgRenderBairros(bairrosCache);
+      cfgModalFechar();
+    }
+  );
+  setTimeout(()=>document.getElementById('cfg-modal-nome')?.focus(),100);
+}
+window.bairroAdicionar=bairroAdicionar;
+
+async function bairroRemover(idx){
+  const bairro=bairrosCache[idx];
+  let qtdPedidos=0;
+  try {
+    const {collection,getDocs,query,where}=window.fbLib;
+    // FIX 4: Filtra pedidos do bairro direto no Firestore
+    const snap=await getDocs(query(collection(window.db,'pedidos'),where('bairro','==',bairro)));
+    qtdPedidos=snap.docs.length;
+  } catch(e){}
+  const msg=qtdPedidos>0
+    ? `Remover o bairro "${bairro}"? Ele possui ${qtdPedidos} pedido(s) cadastrado(s). Os clientes continuarão no sistema sem bairro. Confirme a senha:`
+    : `Remover o bairro "${bairro}"? Confirme a senha:`;
+  modalSenhaAbrir(msg,'🗑️ Remover bairro',()=>{
+    bairrosCache.splice(idx,1);
+    cfgRenderBairros(bairrosCache);
+  });
+}
+window.bairroRemover=bairroRemover;
+
+function popularSelectBairros(){
+  // Atualiza o select de bairro no formulário do cliente
+  const fBairro=document.getElementById('f-bairro');
+  if(fBairro){
+    const val=fBairro.value;
+    fBairro.innerHTML='<option value="">Selecione seu bairro</option>';
+    bairrosCache.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; if(b===val)o.selected=true; fBairro.appendChild(o); });
+  }
+  // Atualiza filtro de bairro nos pedidos
+  const fPed=document.getElementById('filtro-bairro');
+  if(fPed){
+    const val=fPed.value;
+    fPed.innerHTML='<option value="">Todos os bairros</option>';
+    bairrosCache.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; if(b===val)o.selected=true; fPed.appendChild(o); });
+  }
+  // Atualiza filtro de bairro nos clientes
+  const fCli=document.getElementById('cli-filtro-bairro');
+  if(fCli){
+    const val=fCli.value;
+    fCli.innerHTML='<option value="">Todos os bairros</option>';
+    bairrosCache.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; if(b===val)o.selected=true; fCli.appendChild(o); });
+  }
+}
+
+window.popularSelectBairros=popularSelectBairros;
+
+// ─── CLIENTES ─────────────────────────────────────────────────
+let clientesCache=[];
+let cliDesbloqueado=false;
+
+function cliAbrir(){
+  cliDesbloqueado=false;
+  document.getElementById('cli-lock-screen').classList.remove('hidden');
+  document.getElementById('cli-content').classList.add('hidden');
+  document.getElementById('cli-senha-input').value='';
+  hideAlert('cli-senha-err');
+}
+
+async function cliVerificarSenha(){
+  try {
+
+  const v=document.getElementById('cli-senha-input').value;
+  if(await senhaCorreta(v)){
+    cliDesbloqueado=true;
+    document.getElementById('cli-lock-screen').classList.add('hidden');
+    document.getElementById('cli-content').classList.remove('hidden');
+    cliLoad();
+  } else {
+    showAlert('cli-senha-err','Senha incorreta.','error');
+    document.getElementById('cli-senha-input').value='';
+  }
+
+  } catch(e) {
+    console.error('cliVerificarSenha erro:', e);
+  }
+}
+window.cliVerificarSenha=cliVerificarSenha;
+
+async function cliLoad(){
+  document.getElementById('cli-lista').innerHTML='<div class="empty">Carregando...</div>';
+  popularSelectBairros();
+  try {
+    const {collection,getDocs,query,orderBy}=window.fbLib;
+    let snap;
+    try {
+      snap=await getDocs(query(collection(window.db,'clientes'),orderBy('ultimoPedido','desc')));
+    } catch(indexErr){
+      // Fallback: buscar sem orderBy e ordenar em memória
+      snap=await getDocs(collection(window.db,'clientes'));
+    }
+    clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Ordenar em memória para garantir consistência
+    clientesCache.sort((a,b)=>(b.ultimoPedido||'').localeCompare(a.ultimoPedido||''));
+    cliFiltrar();
+  } catch(e){
+    document.getElementById('cli-lista').innerHTML=`<div class="empty">Erro: ${e.message}</div>`;
+  }
+}
+window.cliLoad=cliLoad;
+
+function cliFiltrar(){
+  const busca=(document.getElementById('cli-busca')?.value||'').toLowerCase().trim();
+  const bairro=document.getElementById('cli-filtro-bairro')?.value||'';
+  const anivFiltro=document.getElementById('cli-filtro-aniv')?.value||'';
+  const hoje=new Date();
+  const mesHoje=hoje.getMonth()+1;
+  const diaHoje=hoje.getDate();
+  let lista=clientesCache.filter(c=>{
+    if(bairro&&c.bairro!==bairro) return false;
+    if(busca){
+      const nome=(c.nome||'').toLowerCase();
+      const tel=(c.telefone||'').toLowerCase();
+      if(!nome.includes(busca)&&!tel.includes(busca)) return false;
+    }
+    if(anivFiltro==='tem'&&!c.aniversario) return false;
+    if(anivFiltro==='mes'||anivFiltro==='hoje'){
+      if(!c.aniversario) return false;
+      const partes=c.aniversario.split('-');
+      if(partes.length<3) return false;
+      const mesAniv=parseInt(partes[1],10);
+      const diaAniv=parseInt(partes[2],10);
+      if(isNaN(mesAniv)||isNaN(diaAniv)) return false;
+      if(anivFiltro==='mes'&&mesAniv!==mesHoje) return false;
+      if(anivFiltro==='hoje'&&(mesAniv!==mesHoje||diaAniv!==diaHoje)) return false;
+    }
+    return true;
+  });
+  // Ordenar: aniversário hoje primeiro, depois este mês, depois resto
+  lista.sort((a,b)=>{
+    function anivScore(c){
+      if(!c.aniversario) return 99;
+      const p=c.aniversario.split('-');
+      const m=parseInt(p[1],10),d=parseInt(p[2],10);
+      if(m===mesHoje&&d===diaHoje) return 0;
+      if(m===mesHoje) return 1;
+      return 99;
+    }
+    return anivScore(a)-anivScore(b);
+  });
+  const countEl=document.getElementById('cli-count');
+  if(countEl) countEl.textContent=lista.length===0?'Nenhum cliente encontrado':`${lista.length} cliente(s) encontrado(s)`;
+  if(!lista.length){
+    document.getElementById('cli-lista').innerHTML='<div class="empty">Nenhum cliente.</div>';
+    return;
+  }
+  document.getElementById('cli-lista').innerHTML=lista.map(c=>{
+    let anivInfo='';
+    let anivDestaque=false;
+    let anivHoje=false;
+    if(c.aniversario){
+      const partes=c.aniversario.split('-');
+      const mesAniv=parseInt(partes[1],10);
+      const diaAniv=parseInt(partes[2],10);
+      const dtFmt=`${String(diaAniv).padStart(2,'0')}/${String(mesAniv).padStart(2,'0')}`;
+      if(mesAniv===mesHoje&&diaAniv===diaHoje){
+        anivInfo=`<div class="cliente-info" style="color:#c2410c;font-weight:700">🎂 Aniversário HOJE! (${dtFmt})</div>`;
+        anivHoje=true; anivDestaque=true;
+      } else if(mesAniv===mesHoje){
+        anivInfo=`<div class="cliente-info" style="color:#7c3aed;font-weight:600">🎁 Aniversário este mês: ${dtFmt}</div>`;
+        anivDestaque=true;
+      } else {
+        anivInfo=`<div class="cliente-info">🎂 Aniversário: ${dtFmt}</div>`;
+      }
+    }
+    const borderStyle=anivHoje?'border:2px solid #ea580c;background:#fff7ed':anivDestaque?'border:2px solid #7c3aed;background:#f5f3ff':'';
+    return `
+    <div class="cliente-card" style="${borderStyle}">
+      <div class="cliente-nome">${escHtml(c.nome)||'—'}</div>
+      <div class="cliente-info">📞 ${escHtml(c.telefone)||'—'}</div>
+      <div class="cliente-info">🏘️ ${escHtml(c.bairro)||'—'}</div>
+      <div class="cliente-info">📍 ${escHtml(c.endereco)||'—'}${c.numero?', Nº '+escHtml(c.numero):''}${c.complemento?', '+escHtml(c.complemento):''}</div>
+      ${anivInfo}
+      ${c.ultimoPedido?`<div class="cliente-info">🕐 Último pedido: ${new Date(c.ultimoPedido).toLocaleDateString('pt-BR')}</div>`:''}
+      <div class="cliente-acoes">
+        ${c.telefone?`<a href="https://wa.me/55${(c.telefone||'').replace(/\D/g,'')}" target="_blank" class="btn btn-sm btn-success">💬 WhatsApp</a>`:''}
+        <button class="btn btn-sm btn-danger" onclick="cliExcluir('${escHtml(c.id)}','${(c.nome||'').replace(/'/g,"\\'")}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.cliFiltrar=cliFiltrar;
+
+async function cliExcluir(id,nome){
+  modalSenhaAbrir(`Excluir o cliente "${nome}"? Esta ação não pode ser desfeita. Confirme a senha:`,'🗑️ Excluir cliente',async()=>{
+    try {
+      const {doc,deleteDoc}=window.fbLib;
+      await deleteDoc(doc(window.db,'clientes',id));
+      clientesCache=clientesCache.filter(c=>c.id!==id);
+      cliFiltrar();
+    } catch(e){ alert('Erro ao excluir: '+e.message); }
+  });
+}
+window.cliExcluir=cliExcluir;
+
+function escHtml(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escAttr(s){
+  return String(s||'').replace(/'/g,"\'");
+}
+window.addEventListener('fb-ready',()=>{
+  // handler registrado
+  homeStats();
+  cfgGetCached().then(cfg=>{
+    if(cfg?.horarios?.length) horariosCache=[...cfg.horarios];
+    if(cfg?.bairros?.length) bairrosCache=[...cfg.bairros];
+    popularSelectHorarios();
+    popularSelectBairros();
+  });
+  iniciarPolling();
+  iniciarMonitorPedidos();
+  iniciarBannerNotificacao();
+});
+if(window._fbReadyFired && !window._fbHandled){
+  window._fbHandled=true;
+  homeStats();
+  cfgGetCached().then(cfg=>{
+    if(cfg?.horarios?.length) horariosCache=[...cfg.horarios];
+    if(cfg?.bairros?.length) bairrosCache=[...cfg.bairros];
+    popularSelectHorarios();
+    popularSelectBairros();
+  });
+  iniciarPolling();
+  iniciarMonitorPedidos();
+  iniciarBannerNotificacao();
+}
+</script>
+<script>
+
+// ─── BRIDGE: SW assume monitoramento quando aba é minimizada ─────
+(function(){
+  const FB_PROJECT = 'app-de-rota-marmitex';
+  const FB_APIKEY  = 'AIzaSyBZZkstzJd0lc6Zqu2ZIC0odSuIlddVFAc';
+
+  function swPostMessage(tipo, extra){
+    if(!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.ready.then(reg => {
+      if(reg.active) reg.active.postMessage({ tipo, ...extra });
+    }).catch(()=>{});
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden'){
+      // Aba foi minimizada — passa monitoramento pro SW
+      swPostMessage('START_MONITOR', {
+        ultimoId: window._ultimoPedidoId || null,
+        projectId: FB_PROJECT,
+        apiKey: FB_APIKEY
+      });
+    } else {
+      // Voltou ao primeiro plano — SW pode parar
+      swPostMessage('STOP_MONITOR', {});
+    }
+  });
+
+  // Quando SW enviar notificação de pedido, atualiza o estado local
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.addEventListener('message', e => {
+      if(e.data?.tipo === 'NOVO_PEDIDO_ID'){
+        window._ultimoPedidoId = e.data.id;
+      }
+    });
+  }
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    // Registra SW em qualquer origem HTTPS (ou localhost para dev)
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isHttps = window.location.protocol === 'https:';
+    const isFile  = window.location.protocol === 'file:';
+    if(!isHttps && !isLocal && !isFile) return;
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registrado:', reg.scope))
+      .catch(err => console.log('SW erro:', err));
+  });
+}
+</script>
+</body>
+</html>
